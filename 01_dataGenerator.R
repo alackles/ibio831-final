@@ -1,5 +1,5 @@
 #### Header ####
-## Name: Acacia Ackles; Kate Skocelas; Julia [??]
+## Name: Acacia Ackles; Kate Skocelas; Julia Zheng
 ## Purpose: This script generates the "data" for the project. 
 ## See our project explanation for more details at [filename]
 
