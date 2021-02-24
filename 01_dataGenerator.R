@@ -11,7 +11,7 @@
 n.reps <- 50
 
 #Total number of data points
-n <- n.types*n.reps
+n <- n.reps
 
 # For a binomial distribution, we need to know the number of organisms in each replicate
 # In our work we usually use the same number of organsims in each replicate
@@ -32,7 +32,7 @@ mass <- round(runif(n, min=1, max=10), digits=2)
 # Labeled to make it easier to think about
 # Each element in beta.vec.names indicates the effect of that variable or interaction of variables
 beta.vec.names <- c("WT", "genA", "genB", "genA:genB", "mass")
-beta.vec <- c(-0.4, 0.3, 0.1, 0.2, 0.2) # we can freely edit these
+beta.vec <- c(-0.4, 0.3, 0.1, 0.6, 0.2) # we can freely edit these
 names(beta.vec) <- beta.vec.names
 
 
@@ -53,7 +53,6 @@ cancer.counts <- rbinom(n=n, size=n.orgs, prob=exp.p)
 #### Combine Data ####
 # Combine type data, mass data, and cancer counts
 df <- data.frame(genA, genB, mass, cancer.counts)
-
 
 #### Export ####
 # Export the data to a csv file
