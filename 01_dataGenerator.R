@@ -1,5 +1,5 @@
 #### Header ####
-## Name: Acacia Ackles; Kate Skocelas; Julia Zheng
+## Name: Acacia Ackles; Kate Skocelas; Julia [??]
 ## Purpose: This script generates the "data" for the project. 
 ## See our project explanation for more details at [filename]
 
@@ -31,14 +31,14 @@ mass <- round(runif(n, min=1, max=10), digits=2)
 # Chose the values for the parameters (logit transformed)
 # Labeled to make it easier to think about
 # Each element in beta.vec.names indicates the effect of that variable or interaction of variables
-beta.vec.names <- c("genA", "genB", "genA:genB", "mass")
-beta.vec <- c(-0.4, 0.1, 0.2, 0.2) # we can freely edit these
+beta.vec.names <- c("WT", "genA", "genB", "genA:genB", "mass")
+beta.vec <- c(-0.4, 0.3, 0.1, 0.2, 0.2) # we can freely edit these
 names(beta.vec) <- beta.vec.names
 
 
 #### Model Matrix Creation ####
 # Build the design matrix of the interactive combination of genotype and mass
-Xmat = model.matrix(~type*mass)
+Xmat = model.matrix(~genA*genB + mass)
 
 #### Create Stochastic Data ####
 #Generate the linear predictor (mutliple Xmat by the beta.vec)
@@ -52,7 +52,7 @@ cancer.counts <- rbinom(n=n, size=n.orgs, prob=exp.p)
 
 #### Combine Data ####
 # Combine type data, mass data, and cancer counts
-df <- data.frame(type, mass, cancer.counts)
+df <- data.frame(genA, genB, mass, cancer.counts)
 
 
 #### Export ####
