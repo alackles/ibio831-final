@@ -55,9 +55,9 @@ $counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genoty
 
 - $counts$ = expected number of organisms with cancer present
 - $\alpha$ = (intercept) -- expected incidence rate of cancer in wildtype reference
-- $\beta_1$ = difference in mean rate of cancer for genotype_A compared to wildtype (how much gene A influences incidence of cancer)
-- $\beta_2$ = difference in mean rate of cancer for genotype_B compared to wildtype (how much gene B influences incidence of cancer)
-- $\delta$ = slope term indicating the interaction relationship between genes A and B (how much genes A and B combined influence incidence of cancer)
+- $\beta_1$ = constant for genotype_A (how much gene A influences incidence of cancer)
+- $\beta_2$ = constant for genotype_B (how much gene B influences incidence of cancer)
+- $\delta$ = slope term indicating the interaction between genes A and B (how much genes A and B combined influence incidence of cancer)
 - $\gamma$ = constant for mass (how much organism mass influences incidence of cancer)
 - $\epsilon$ = randomness pulled from binomial distribution
   + $\epsilon \sim Bin(p,N)$
