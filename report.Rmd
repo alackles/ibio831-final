@@ -2,29 +2,145 @@
 title: "Project"
 author: "Acacia, Kate, Julia"
 date: "3/23/2021"
-output: html_document
+output: 
+      html_document: default
+      pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+set.seed(1)
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)            
 ```
 
-## R Markdown
+## Scenario
+Genes A and B have both been shown to be related to lifetime chance of cancer. We want to know if an organism with gene A has the same chance of cancer as an organism with gene B, and how that differs when an organism has both genes A and B, or neither gene. We need to include the covariate of the organism’s mass, because we know this also affects the lifetime chance of cancer. 
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+We sample N organisms of each of the four genotypes, and we record their body mass and whether or not cancer is present in that organism. 
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+### Hypothesis
 
-```{r cars}
-summary(cars)
+_Null Hypothesis_: The probability of cancer is equal across all genotypes.
+
+_Alternative Hypothesis_: The probability of cancer is different between genotypes.
+
+### Variables
+
+_Genotypes_: WT (neither A nor B), A, B, and AB. A and B each have an incidence rate for cancer.
+
+_Mass_: a continuous variable between 1 and 10 grams
+
+_Genotype A x Genotype B_: Interaction effects
+
+_Response variable_: Presence or absence of cancer in the organism (0/1) 
+
+_Predictor variables_: Genotype A, Genotype B, interaction between Genotypes A & B, and organism mass 
+
+
+## Modeling and Justification
+
+
+**Binomial Distribution**
+
+$y \sim Bin(p,N)$
+
+- $p$ is probability of cancer
+- $N$ is total number of individuals
+
+_Justification_: We measure cancer as either present/ absent in each organism. The data simulation evolves N multicellular individuals. We have fixed N number of trials that we can repeat _ad infinitum_. This is a frequentists' approach. Hence, we chose Binomial distribution.
+
+**Deterministic Function (model) & Joint Probability (likelihood)**
+
+$counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genotype_A * genotype_B + \gamma * mass + \epsilon$
+
+- $counts$ = expected number of organisms with cancer present
+- $\alpha$ = (intercept) -- expected incidence rate of cancer in wildtype reference
+- $\beta_1$ = difference in mean rate of cancer for genotype_A compared to wildtype (how much gene A influences incidence of cancer)
+- $\beta_2$ = difference in mean rate of cancer for genotype_B compared to wildtype (how much gene B influences incidence of cancer)
+- $\delta$ = slope term indicating the interaction relationship between genes A and B (how much genes A and B combined influence incidence of cancer)
+- $\gamma$ = constant for mass (how much organism mass influences incidence of cancer)
+- $\epsilon$ = randomness pulled from binomial distribution
+  + $\epsilon \sim Bin(p,N)$
+
+---
+
+## Simulate the Data
+
+```{r}
+
+#### Number of Datapoints ####
+# Assume a balanced design
+# 2 kinds of genes - A and B
+# Arbitrary number of replicates performed
+n.reps <- 80 #50   #changed to 80 so that 4 divides evenly into it
+
+#Total number of data points
+n <- n.reps
+
+# For a binomial distribution, we need to know the number of organisms in each replicate
+# In our work we usually use the same number of organsims in each replicate
+n.orgs <- rep(100,n)
+
+
+#### Data Simulation ####
+
+# Specify a categorical variable which indicates genotype
+genA <- factor(rep(c(0,1), each=n/2)) # produces 0000...1111....
+genB <- factor(rep(rep(c(0,1), each=n/4),2)) # produces 00...11...00...11...
+
+# We also need a vector to indicate mass for each organism
+# Assume this is a continuous variable between 1 and 10 grams
+mass <- round(runif(n, min=1, max=10), digits=2)
+
+# Chose the values for the parameters (logit transformed)
+# Labeled to make it easier to think about
+# Each element in beta.vec.names indicates the effect of that variable or interaction of variables
+beta.vec.names <- c("WT", "genA", "genB", "genA:genB", "mass")
+beta.vec <- c(-0.4, 0.3, 0.1, 0.6, 0.2) # we can freely edit these
+names(beta.vec) <- beta.vec.names
+
+
+#### Model Matrix Creation ####
+# Build the design matrix of the interactive combination of genotype and mass
+Xmat = model.matrix(~genA*genB + mass)
+
+#### Create Stochastic Data ####
+#Generate the linear predictor (mutliple Xmat by the beta.vec)
+lin.pred =  Xmat%*%beta.vec
+
+#Transform the data with an inverse logit to get the expected proportion of cancerous samples
+exp.p <- exp(lin.pred)/(1+exp(lin.pred))
+
+# Add binomial noise
+cancer.counts <- rbinom(n=n, size=n.orgs, prob=exp.p)
+
+#### Combine Data ####
+# Combine type data, mass data, and cancer counts
+df <- data.frame(genA, genB, mass, cancer.counts)
+
+#### Export ####
+# Export the data to a csv file
+filename <- "cancer_data.csv"
+write.csv(df, file=filename, row.names = FALSE)
 ```
 
-## Including Plots
+---
+## Parameter estimation method
 
-You can also embed plots, for example:
+---
+## Statistical Test
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+---
+
+## Plots
+
+
+
+```{r, echo=FALSE}
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+---
+
+## Analysis
+```{r}
+```
