@@ -3,8 +3,8 @@ title: "Project"
 author: "Acacia, Kate, Julia"
 date: "3/23/2021"
 output: 
-      html_document: default
       pdf_document: default
+      html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -18,6 +18,22 @@ Genes A and B have both been shown to be related to lifetime chance of cancer. W
 
 We sample N organisms of each of the four genotypes, and we record their body mass and whether or not cancer is present in that organism. 
 
+### Story
+
+Your lab is studying cancer-related genes using feline mammary carcinomas (FMCs) to both validate these tumors as models for human breast cancer (HBC) studies and to improve small animal veterinary practice. FMCs have been emerging as valuable models for human breast cancer, and the domestic cat is highly affected by spontaneous mammary tumors (Ferreira et al., 2019).
+ 
+The cancer-related genes A and B are conserved between cat and human. Both genes have been shown to be related to lifetime incidence of HBC, but they have not been studied in cats. You want to know if a cat with gene A has the same lifetime chance of developing a FMC as a cat with gene B, and how that differs when an organism has both genes A and B, or neither gene (wild type).
+ 
+A cat’s breed, sex, age, and whether or not it is intact all greatly influence their lifetime risk of FMCs (Ohio State University Veterinary Medical Center, 2021). To control for these factors, you use only intact female domestic shorthair cats that are 10 years and older (which show the highest incidence of FMCs) as study subjects. A cat’s mass affects their lifetime chance of cancer as well. 
+
+Working with the MSU Small Animal Clinic, you recruit 100 participants for the study: 25 with gene A, 25 with gene B, 25 with both genes A and B, and 25 with neither gene. For each cat, you record its genotype, mass at time of death and whether or not it had a FMC in its lifetime. Your null hypothesis is that the lifetime chance of developing a FMC is equal across all four genotypes. Your alternative hypothesis is that the lifetime chance of developing a FMC is different between genotypes.
+
+
+Ferreira D, Martins B, Soares M, Correia J, Adega F, et al. (2019) Gene expression association study in feline mammary carcinomas. PLOS ONE 14(8): e0221776. https://doi.org/10.1371/journal.pone.0221776
+
+Ohio State University Veterinary Medical Center (2021) Feline Mammary Tumors. Retrieved from https://vet.osu.edu/vmc/companion/our-services/oncology-and-hematology/common-tumor-types/feline-mammary-tumors
+
+
 ### Hypothesis
 
 _Null Hypothesis_: The probability of cancer is equal across all genotypes.
@@ -28,7 +44,7 @@ _Alternative Hypothesis_: The probability of cancer is different between genotyp
 
 _Genotypes_: WT (neither A nor B), A, B, and AB. A and B each have an incidence rate for cancer.
 
-_Mass_: a continuous variable between 1 and 10 grams
+_Mass_: a continuous variable between 7 and 15 lbs
 
 _Genotype A x Genotype B_: Interaction effects
 
@@ -47,7 +63,7 @@ $y \sim Bin(p,N)$
 - $p$ is probability of cancer
 - $N$ is total number of individuals
 
-_Justification_: We measure cancer as either present/ absent in each organism. The data simulation evolves N multicellular individuals. We have fixed N number of trials that we can repeat _ad infinitum_. This is a frequentists' approach. Hence, we chose Binomial distribution.
+_Justification_: We measure cancer as either present/ absent in each organism. The data simulation evolves N multicellular individuals. We have fixed N number of trials that we can repeat _ad infinitum_. This is a frequentists' approach. Hence, we chose the Binomial distribution.
 
 **Deterministic Function (model) & Joint Probability (likelihood)**
 
@@ -70,7 +86,7 @@ $counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genoty
 
 #### Number of Datapoints ####
 # Assume a balanced design
-# 2 kinds of genes - A and B
+# 2 genes - A and B
 # Arbitrary number of replicates performed
 n.reps <- 80 #50   #changed to 80 so that 4 divides evenly into it
 
@@ -89,14 +105,14 @@ genA <- factor(rep(c(0,1), each=n/2)) # produces 0000...1111....
 genB <- factor(rep(rep(c(0,1), each=n/4),2)) # produces 00...11...00...11...
 
 # We also need a vector to indicate mass for each organism
-# Assume this is a continuous variable between 1 and 10 grams
-mass <- round(runif(n, min=1, max=10), digits=2)
+# Assume this is a continuous variable between 7 and 15 pounds
+mass <- round(runif(n, min=7, max=15), digits=2)
 
 # Chose the values for the parameters (logit transformed)
 # Labeled to make it easier to think about
 # Each element in beta.vec.names indicates the effect of that variable or interaction of variables
 beta.vec.names <- c("WT", "genA", "genB", "genA:genB", "mass")
-beta.vec <- c(-0.4, 0.3, 0.1, 0.6, 0.2) # we can freely edit these
+beta.vec <- c(0, 0.3, 0.1, 0.6, 0.2) # we can freely edit these
 names(beta.vec) <- beta.vec.names
 
 
