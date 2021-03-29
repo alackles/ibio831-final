@@ -112,7 +112,7 @@ mass <- round(runif(n, min=7, max=15), digits=2)
 # Labeled to make it easier to think about
 # Each element in beta.vec.names indicates the effect of that variable or interaction of variables
 beta.vec.names <- c("WT", "genA", "genB", "genA:genB", "mass")
-beta.vec <- c(0, 0.3, 0.1, 0.6, 0.2) # we can freely edit these
+beta.vec <- c(0, 0.03, 0.01, 0.09, 0.02) # we can freely edit these
 names(beta.vec) <- beta.vec.names
 
 
@@ -142,7 +142,13 @@ write.csv(df, file=filename, row.names = FALSE)
 
 ---
 ## Parameter estimation method
-
+```{r}
+null.model <- glm(cancer.counts ~ genA + genB + mass, family=poisson)
+ab.model <- glm(cancer.counts ~ genA*genB + mass, family=poisson)
+amass.model <- glm(cancer.counts ~ genA*mass + genB, family=poisson)
+bmass.model <- glm(cancer.counts ~ genB*mass +genA, family=poisson)
+full.model <- glm(cancer.counts ~ genA*genB*mass, family=poisson)
+```
 ---
 ## Statistical Test
 
