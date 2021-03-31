@@ -38,7 +38,13 @@ Ohio State University Veterinary Medical Center (2021) Feline Mammary Tumors. Re
 
 _Null Hypothesis_: The probability of cancer is equal across all genotypes.
 
-_Alternative Hypothesis_: The probability of cancer is different between genotypes.
+_Alternative Hypothesis 1 (no interaction effect)_: A, B, and AB all show a higher probability of cancer than WT, where A+B = AB.
+
+_Alternative Hypothesis 2 (interaction effect increases probability)_: A, B, and AB all show a higher probability of cancer than WT, where A + B > AB.
+
+_Alternative Hypothesis 3 (interaction effect decreases probability)_: A, B, and AB all show a higher probability of cancer than WT, where A + B < AB.
+
+
 
 ### Variables
 
@@ -143,11 +149,10 @@ write.csv(df, file=filename, row.names = FALSE)
 ---
 ## Parameter estimation method
 ```{r}
-null.model <- glm(cancer.counts ~ genA + genB + mass, family=poisson)
-ab.model <- glm(cancer.counts ~ genA*genB + mass, family=poisson)
-amass.model <- glm(cancer.counts ~ genA*mass + genB, family=poisson)
-bmass.model <- glm(cancer.counts ~ genB*mass +genA, family=poisson)
-full.model <- glm(cancer.counts ~ genA*genB*mass, family=poisson)
+null.model <- glm(cancer.counts ~ mass, family=poisson)
+no.interaction.model <- glm(cancer.counts ~ genA + genB + mass, family=poisson)
+interaction.model <- glm(cancer.counts ~ genA*genB + mass, family=poisson)
+
 ```
 ---
 ## Statistical Test
