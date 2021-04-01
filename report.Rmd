@@ -82,7 +82,7 @@ $counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genoty
 - $\delta$ = slope term indicating the interaction between genes A and B (how much genes A and B combined influence incidence of cancer)
 - $\gamma$ = constant for mass (how much organism mass influences incidence of cancer)
 - $\epsilon$ = randomness pulled from binomial distribution
-  + $\epsilon \sim Bin(p,N)$
+  + $\epsilon \sim N(0,\sigma^2)$
 
 ---
 
