@@ -82,26 +82,32 @@ $counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genoty
 - $\delta$ = slope term indicating the interaction between genes A and B (how much genes A and B combined influence incidence of cancer)
 - $\gamma$ = constant for mass (how much organism mass influences incidence of cancer)
 - $\epsilon$ = randomness pulled from binomial distribution
-  + $\epsilon \sim N(0,\sigma^2)$
+  + $\epsilon \sim Bin(p,N)$
 
 ---
 
 ## Simulate the Data
 
 ```{r}
-
+# Load packages
+library(ggplot2) # for plotting
+library(GGally) # for ggpairs function, pairwise plotting of multiple variables
+library(lme4) # for GLMMs
+```
+```{r}
+set.seed(12345)
 #### Number of Datapoints ####
 # Assume a balanced design
 # 2 genes - A and B
 # Arbitrary number of replicates performed
-n.reps <- 80 #50   #changed to 80 so that 4 divides evenly into it
+n.reps <- 100
 
 #Total number of data points
 n <- n.reps
 
 # For a binomial distribution, we need to know the number of organisms in each replicate
 # In our work we usually use the same number of organsims in each replicate
-n.orgs <- rep(100,n)
+#n.orgs <- rep(100,n)    this code wasn't used, commented out for clarity
 
 
 #### Data Simulation ####
@@ -118,7 +124,7 @@ mass <- round(runif(n, min=7, max=15), digits=2)
 # Labeled to make it easier to think about
 # Each element in beta.vec.names indicates the effect of that variable or interaction of variables
 beta.vec.names <- c("WT", "genA", "genB", "genA:genB", "mass")
-beta.vec <- c(0, 0.03, 0.01, 0.09, 0.02) # we can freely edit these
+beta.vec <- c(0, 0.03, 0.022, 0.25, 0.02) # we can freely edit these
 names(beta.vec) <- beta.vec.names
 
 
@@ -134,7 +140,7 @@ lin.pred =  Xmat%*%beta.vec
 exp.p <- exp(lin.pred)/(1+exp(lin.pred))
 
 # Add binomial noise
-cancer.counts <- rbinom(n=n, size=n.orgs, prob=exp.p)
+cancer.counts <- rbinom(n=n, size=1, prob=exp.p)
 
 #### Combine Data ####
 # Combine type data, mass data, and cancer counts
@@ -144,15 +150,18 @@ df <- data.frame(genA, genB, mass, cancer.counts)
 # Export the data to a csv file
 filename <- "cancer_data.csv"
 write.csv(df, file=filename, row.names = FALSE)
+
 ```
 
 ---
 ## Parameter estimation method
 ```{r}
-null.model <- glm(cancer.counts ~ mass, family=poisson)
-no.interaction.model <- glm(cancer.counts ~ genA + genB + mass, family=poisson)
-interaction.model <- glm(cancer.counts ~ genA*genB + mass, family=poisson)
-
+null.model <- glm(cancer.counts ~ mass, data=df,binomial(link="logit"))
+no.interaction.model <- glm(cancer.counts  ~ genA + genB + mass, data=df,binomial(link="logit"))
+interaction.model <- glm(cancer.counts  ~ genA*genB + mass, data=df,binomial(link="logit"))
+summary(null.model)
+summary(no.interaction.model)
+summary(interaction.model)
 ```
 ---
 ## Statistical Test
