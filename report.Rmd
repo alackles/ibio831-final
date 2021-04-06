@@ -3,8 +3,8 @@ title: "Project"
 author: "Acacia, Kate, Julia"
 date: "3/23/2021"
 output: 
-      pdf_document: default
       html_document: default
+      pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -88,13 +88,21 @@ $counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genoty
 
 ## Simulate the Data
 
-```{r}
+```{r packages}
+#Install packages if necessary
+#install.packages("ggplot2")
+#install.packages("GGally")
+#install.packages("lme4")
+#install.packages("AICcmodavg")
+
 # Load packages
 library(ggplot2) # for plotting
 library(GGally) # for ggpairs function, pairwise plotting of multiple variables
 library(lme4) # for GLMMs
+library(AICcmodavg) # for AIC comparison
 ```
-```{r}
+```{r simulate}
+### Same random seed
 set.seed(12345)
 #### Number of Datapoints ####
 # Assume a balanced design
@@ -150,12 +158,13 @@ df <- data.frame(genA, genB, mass, cancer.counts)
 # Export the data to a csv file
 filename <- "cancer_data.csv"
 write.csv(df, file=filename, row.names = FALSE)
-
 ```
 
 ---
+
 ## Parameter estimation method
-```{r}
+
+```{r models}
 null.model <- glm(cancer.counts ~ mass, data=df,binomial(link="logit"))
 no.interaction.model <- glm(cancer.counts  ~ genA + genB + mass, data=df,binomial(link="logit"))
 interaction.model <- glm(cancer.counts  ~ genA*genB + mass, data=df,binomial(link="logit"))
@@ -165,6 +174,9 @@ summary(interaction.model)
 ```
 ---
 ## Statistical Test
+
+```{r comparison}
+```
 
 ---
 
