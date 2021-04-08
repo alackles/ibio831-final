@@ -129,7 +129,10 @@ mass <- round(runif(n, min=7, max=15), digits=2)
 # Labeled to make it easier to think about
 # Each element in beta.vec.names indicates the effect of that variable or interaction of variables
 beta.vec.names <- c("WT", "A", "B", "A:B", "mass")
-beta.vec <- c(0, 0.02, 0.01, 0.04, 0.005) # we can freely edit these
+# this is nonlinear transformation on the logit scale, so 0.02 does NOT mean 2% increase in prob. of cancer!!!
+# small change in these params will cause MAJOR changes because on logit scale
+# A:B is the amount of EXTRA change on top of A+B, so anything over zero is an interaction effect
+beta.vec <- c(0, 0.3, 0.2, 0.05, 0.05) 
 names(beta.vec) <- beta.vec.names
 
 
@@ -188,13 +191,13 @@ aictab(cand.set = models, modnames = model.names)
 ## Plots
 
 ```{r, echo=FALSE}
-cancer.table <- df %>%
-  tabyl(genotype, cancer.counts) %>%
-  #rename(none=0, cancer=1) %>%
-  .
-cancer.table
-
-ggplot(data=cancer.table, aes(x = genotype, y = "1")) + geom_boxplot()
+# cancer.table <- df %>%
+#   tabyl(genotype, cancer.counts) %>%
+#   #rename(none=0, cancer=1) %>%
+#   .
+# cancer.table
+# 
+# ggplot(data=cancer.table, aes(x = genotype, y = "1")) + geom_boxplot()
 
 ```
 
@@ -202,6 +205,9 @@ ggplot(data=cancer.table, aes(x = genotype, y = "1")) + geom_boxplot()
 ## Analysis of Effect & Uncertainty Sizes
 
 ```{r}
+
+
+
 ```
 
 ---
