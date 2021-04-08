@@ -90,12 +90,14 @@ $counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genoty
 
 ```{r packages}
 #Install packages if necessary
+#install.packages("janitor")
 #install.packages("ggplot2")
 #install.packages("GGally")
 #install.packages("lme4")
 #install.packages("AICcmodavg")
 
 # Load packages
+library(janitor) # for data
 library(ggplot2) # for plotting
 library(GGally) # for ggpairs function, pairwise plotting of multiple variables
 library(lme4) # for GLMMs
@@ -186,8 +188,13 @@ aictab(cand.set = models, modnames = model.names)
 ## Plots
 
 ```{r, echo=FALSE}
-library(ggplot2)
-ggplot(aes(genotype ~ cancer.counts), groupby(genotype)data=df)
+cancer.table <- df %>%
+  tabyl(genotype, cancer.counts) %>%
+  #rename(none=0, cancer=1) %>%
+  .
+cancer.table
+
+ggplot(data=cancer.table, aes(x = genotype, y = "1")) + geom_boxplot()
 
 ```
 
