@@ -114,10 +114,10 @@ n <- 1000
 #### Data Simulation ####
 
 # Specify a categorical variable which indicates genotype
-genA <- factor(rep(c(0,1), each=n/2)) # produces 0000...1111....
-genB <- factor(rep(rep(c(0,1), each=n/4),2)) # produces 00...11...00...11...
+genA <- factor(rep(rep(c(0,1), each=n/4),2)) # produces 00...11...00...11...
+genB <- factor(rep(c(0,1), each=n/2)) # produces 0000...1111....
 types <- c("WT", "A", "B", "AB")
-df$genotype <- factor(rep(types), each=n/4))
+genotype <- factor(rep(types, each=n/4))
 
 # We also need a vector to indicate mass for each organism
 # Assume this is a continuous variable between 7 and 15 pounds
@@ -127,7 +127,7 @@ mass <- round(runif(n, min=7, max=15), digits=2)
 # Labeled to make it easier to think about
 # Each element in beta.vec.names indicates the effect of that variable or interaction of variables
 beta.vec.names <- c("WT", "A", "B", "A:B", "mass")
-beta.vec <- c(0, 0.02, 0.01, 0.04, 0.05) # we can freely edit these
+beta.vec <- c(0, 0.02, 0.01, 0.04, 0.005) # we can freely edit these
 names(beta.vec) <- beta.vec.names
 
 
@@ -147,7 +147,7 @@ cancer.counts <- rbinom(n=n, size=1, prob=exp.p)
 
 #### Combine Data ####
 # Combine type data, mass data, and cancer counts
-df <- data.frame(genA, genB, mass, cancer.counts)
+df <- data.frame(genA, genB, mass, genotype, cancer.counts)
 df
 
 #### Export ####
@@ -161,15 +161,6 @@ df
 ## Parameter estimation method
 
 ```{r models}
-# non.cancer <- n-cancer.counts
-# binom.prop <- cbind(cancer.counts, non.cancer)
-# null.model <- glm(binom.prop ~ mass, data=df,binomial(link="logit"))
-# no.interaction.model <- glm(binom.prop  ~ genA + genB + mass, data=df,binomial(link="logit"))
-# interaction.model <- glm(binom.prop  ~ genA*genB + mass, data=df,binomial(link="logit"))
-# summary(null.model)
-# summary(no.interaction.model)
-# summary(interaction.model)
-
 null.model <- glm(cancer.counts ~ mass, data=df,binomial(link="logit"))
 no.interaction.model <- glm(cancer.counts  ~ genA + genB + mass, data=df,binomial(link="logit"))
 interaction.model <- glm(cancer.counts  ~ genA*genB + mass, data=df,binomial(link="logit"))
@@ -178,8 +169,11 @@ summary(no.interaction.model)
 summary(interaction.model)
 
 ```
+
 ---
+
 ## Statistical Test
+
 
 ```{r comparison}
 models <- list(null.model, no.interaction.model, interaction.model)
@@ -192,6 +186,9 @@ aictab(cand.set = models, modnames = model.names)
 ## Plots
 
 ```{r, echo=FALSE}
+library(ggplot2)
+ggplot(aes(genotype ~ cancer.counts), groupby(genotype)data=df)
+
 ```
 
 ---
