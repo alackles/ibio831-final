@@ -204,7 +204,7 @@ cancer.table <- df %>%
   rename(none="0", cancer="1")
 cancer.table
 # 
-# ggplot(data=cancer.table, aes(x = genotype, y = "1")) + geom_boxplot()
+ggplot(data=df, aes(x=mass, y=cancer.counts)) + geom_point()
 
 ```
 
