@@ -90,14 +90,15 @@ $counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genoty
 
 ```{r packages}
 #Install packages if necessary
-#install.packages("janitor")
+#install.packages("dplyr")
 #install.packages("ggplot2")
 #install.packages("GGally")
 #install.packages("lme4")
 #install.packages("AICcmodavg")
 
 # Load packages
-library(janitor) # for data
+library(dplyr) # for data
+library(tidyr) # also data
 library(ggplot2) # for plotting
 library(GGally) # for ggpairs function, pairwise plotting of multiple variables
 library(lme4) # for GLMMs
@@ -196,11 +197,12 @@ We can see that interaction model is the model with the lowest AIC; however, the
 ## Plots
 
 ```{r, echo=FALSE}
-# cancer.table <- df %>%
-#   tabyl(genotype, cancer.counts) %>%
-#   #rename(none=0, cancer=1) %>%
-#   .
-# cancer.table
+cancer.table <- df %>%
+  group_by(genotype) %>%
+  count(cancer.counts) %>%
+  spread(cancer.counts, n) %>%
+  rename(none="0", cancer="1")
+cancer.table
 # 
 # ggplot(data=cancer.table, aes(x = genotype, y = "1")) + geom_boxplot()
 
