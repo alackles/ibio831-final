@@ -177,8 +177,9 @@ summary(interaction.model)
 
 ---
 
-## Statistical Test
+## Statistical Test of Models and Model Comparison
 
+We compare our models--a null model, a model with additive effects only, and a model with interaction effects--using Akaike Information Content (AIC). The following table lists the models from lowest to highest AIC ("best" to "worst" model, loosely).
 
 ```{r comparison}
 models <- list(null.model, no.interaction.model, interaction.model)
@@ -186,6 +187,10 @@ model.names <- c("null", "additive", "interaction")
 aictab(cand.set = models, modnames = model.names)
 
 ```
+
+We can see that interaction model is the model with the lowest AIC; however, the next-highest model, the additive, only has a $\Delta$AIC of 0.81. This indicates the models are not meaningfully different from one another.
+
+<!--TODO: Discuss effect size?-->
 
 ---
 ## Plots
