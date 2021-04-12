@@ -199,13 +199,14 @@ We can see that interaction model is the model with the lowest AIC; however, the
 
 ```{r, echo=FALSE}
 cancer.table <- df %>%
-  group_by(genotype) %>%
+  group_by(genotype, mass) %>%
   count(cancer.counts) %>%
   spread(cancer.counts, n) %>%
-  rename(none="0", cancer="1")
-cancer.table
+  rename(healthy="0", cancer="1")
+
+cancer.table$cancer.prop <- (cancer.table$cancer)/(cancer.table$cancer + cancer.table$healthy)
 # 
-ggplot(data=cancer.table, aes(x=genotype, y=cancer)) + geom_jitter()
+ggplot(data=cancer.table, aes(x=mass, y=cancer.prop, color=genotype)) + geom_jitter()
 
 ```
 
