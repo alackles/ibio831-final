@@ -124,7 +124,8 @@ genotype <- factor(rep(types, each=n/4))
 
 # We also need a vector to indicate mass for each organism
 # Assume this is a continuous variable between 7 and 15 pounds
-mass <- round(rnorm(n, min=7, max=15), digits=0)
+weights <- 7:15
+mass <- rep(7:15, length.out=1000)
 
 # Chose the values for the parameters (logit transformed)
 # Labeled to make it easier to think about
