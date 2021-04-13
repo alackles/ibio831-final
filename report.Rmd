@@ -188,7 +188,7 @@ models <- list(null.model, mass.model, no.interaction.model, interaction.model)
 model.names <- c("null", "mass","additive", "interaction")
 
 ### AIC ###
-AICtab = AICctab(null.model, mass.model, no.interaction.model, interaction.model, base=TRUE, delta=TRUE, weights=TRUE, logLik=TRUE)
+AICtab = aictab(null.model, mass.model, no.interaction.model, interaction.model, base=TRUE, delta=TRUE, weights=TRUE, logLik=TRUE)
 class(AICtab) = 'data.frame'
 
 plot(logLik ~ df, data=AICtab)  # loglikelihood ratio test relative to null.model
