@@ -103,6 +103,7 @@ library(GGally) # for ggpairs function, pairwise plotting of multiple variables
 library(lme4) # for GLMMs
 library(AICcmodavg) # for AIC comparison
 library(boot) # inv.logit function
+library(bbmle) # for AICctab function, convient way to compare models
 ```
 ```{r simulate}
 ### Same random seed
