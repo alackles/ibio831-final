@@ -162,6 +162,7 @@ cancer.table <- df %>%
   count(cancer.counts) %>%
   spread(cancer.counts, n) %>%
   rename(healthy="0", cancer="1")
+cancer.table$genotype <- factor(cancer.table$genotype, levels=c("WT", "A","B", "AB"))
 cancer.table$cancer.prop <- (cancer.table$cancer)/(cancer.table$cancer + cancer.table$healthy)
 
 ```
@@ -178,7 +179,7 @@ head(cancer.table, n=15)
 ## Parameter estimation method
 
 ```{r models}
-cancer.table$mass.scaled <- scale(cancer.table$mass)
+cancer.table$mass.scaled <- cancer.table$mass - 10.5
 null.model <- glm(cbind(healthy,cancer) ~ 1, data=cancer.table,binomial(link="logit"))
 mass.model <- glm(cbind(healthy,cancer) ~ mass.scaled, data=cancer.table,binomial(link="logit"))
 no.interaction.model <- glm(cbind(healthy,cancer)  ~ genA + genB + mass.scaled, data=cancer.table,binomial(link="logit"))
@@ -188,6 +189,25 @@ summary(mass.model)
 summary(no.interaction.model)
 summary(interaction.model)
 ```
+
+---
+
+## Plots
+
+Here, we present our raw data compared to the options for our models.
+
+```{r}
+
+plt <- ggplot(data=cancer.table, aes(x=mass.scaled, y=cancer.prop, color=genotype)) + geom_jitter() + ylim(0,1)
+
+null.plt <- plt + geom_hline(yintercept=inv.logit(coef(null.model)[[1]]))
+null.plt
+
+coef.mass <- inv.logit(coef(mass.model))
+mass.plt <- plt + geom_abline(intercept = coef.mass[[1]], slope = coef.mass[[2]])
+mass.plt
+```
+
 
 ---
 
@@ -293,18 +313,7 @@ lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
 # Model averaging doesn't seem to help, which makes sense since parameters are only useful in context of its own model.
 ```
 
-We can see that interaction model is the model with the lowest AIC; however, the next-highest model, the additive, only has a $\Delta$AIC of 0.81. This indicates the models are not meaningfully different from one another.
-
----
-## Plots
-
-Here, we present our raw data compared to the options for our models.
-
-```{r}
-
-ggplot(data=cancer.table, aes(x=mass, y=cancer.prop, color=genotype)) + geom_jitter()
-
-```
+We can see that interaction model is the model with the lowest AIC; however, the next-highest model, the additive, only has a $\Delta$AIC of 1.9. This may or may not be meaningfully different.
 
 ---
 
