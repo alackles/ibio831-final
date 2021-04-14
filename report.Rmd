@@ -3,8 +3,8 @@ title: "Project"
 author: "Acacia, Kate, Julia"
 date: "3/23/2021"
 output: 
-      pdf_document: default
       html_document: default
+      pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -88,20 +88,20 @@ $counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genoty
 
 ## Simulate the Data
 
-```{r packages}
+```{r packages, message=FALSE}
 #Install packages if necessary
 #install.packages("dplyr")
 #install.packages("ggplot2")
 #install.packages("GGally")
 #install.packages("lme4")
-#install.packages("AICcmodavg")
+#install.packages("boot")
+#install.packages("bbmle")
 # Load packages
 library(dplyr) # for data
 library(tidyr) # also data
 library(ggplot2) # for plotting
 library(GGally) # for ggpairs function, pairwise plotting of multiple variables
 library(lme4) # for GLMMs
-library(AICcmodavg) # for AIC comparison
 library(boot) # inv.logit function
 library(bbmle) # for AICctab function, convient way to compare models
 ```
@@ -114,41 +114,47 @@ set.seed(12345)
 # number of cats looked at
 n <- 1000
 #### Data Simulation ####
+
 # Specify a categorical variable which indicates genotype
 genA <- factor(rep(rep(c(0,1), each=n/4),2)) # produces 00...11...00...11...
 genB <- factor(rep(c(0,1), each=n/2)) # produces 0000...1111....
 types <- c("WT", "A", "B", "AB")
 genotype <- factor(rep(types, each=n/4))
+
 # We also need a vector to indicate mass for each organism
 weights <- 7:14
 mass <- rep(7:14, length.out=n)
+
 # Chose the values for the parameters (logit transformed)
 # Labeled to make it easier to think about
 # Each element in beta.vec.names indicates the effect of that variable or interaction of variables
 beta.vec.names <- c("WT", "A", "B", "A:B", "mass")
+
 # this is nonlinear transformation on the logit scale, so 0.02 does NOT mean 2% increase in prob. of cancer!!!
 # small change in these params will cause MAJOR changes because on logit scale
 # A:B is the amount of EXTRA change on top of A+B, so anything over zero is an interaction effect
 beta.vec <- c(0, 0.3, 0.2, 0.05, 0.05) 
 names(beta.vec) <- beta.vec.names
+
 #### Model Matrix Creation ####
+
 # Build the design matrix of the interactive combination of genotype and mass
 Xmat = model.matrix(~genA*genB + mass)
+
 #### Create Stochastic Data ####
+
 #Generate the linear predictor (mutliple Xmat by the beta.vec)
 lin.pred =  Xmat[,]%*%beta.vec
+
 #Transform the data with an inverse logit to get the expected proportion of cancerous samples
 exp.p <- exp(lin.pred)/(1+exp(lin.pred))
+
 # Add binomial noise
 cancer.counts <- rbinom(n=n, size=1, prob=exp.p)
+
 #### Combine Data ####
 # Combine type data, mass data, and cancer counts
 df <- data.frame(genA, genB, mass, genotype, cancer.counts)
-df
-#### Export ####
-# Export the data to a csv file
-#filename <- "cancer_data.csv"
-#write.csv(df, file=filename, row.names = FALSE)
 
 #### Data pre-processing ####
 cancer.table <- df %>%
@@ -158,21 +164,25 @@ cancer.table <- df %>%
   rename(healthy="0", cancer="1")
 cancer.table$cancer.prop <- (cancer.table$cancer)/(cancer.table$cancer + cancer.table$healthy)
 
-cancer.table
-
 ```
 
+## Data 
+
+```{r}
+# Look at our data... a little bit
+head(df, n=15)
+head(cancer.table, n=15)
+```
 ---
 
 ## Parameter estimation method
 
 ```{r models}
 cancer.table$mass.scaled <- scale(cancer.table$mass)
-
-null.model <- glm(cancer.prop ~ 1, data=cancer.table,binomial(link="logit"))
-mass.model <- glm(cancer.prop ~ mass.scaled, data=cancer.table,binomial(link="logit"))
-no.interaction.model <- glm(cancer.prop  ~ genA + genB + mass.scaled, data=cancer.table,binomial(link="logit"))
-interaction.model <- glm(cancer.prop  ~ genA*genB + mass.scaled, data=cancer.table,binomial(link="logit"))
+null.model <- glm(cbind(healthy,cancer) ~ 1, data=cancer.table,binomial(link="logit"))
+mass.model <- glm(cbind(healthy,cancer) ~ mass.scaled, data=cancer.table,binomial(link="logit"))
+no.interaction.model <- glm(cbind(healthy,cancer)  ~ genA + genB + mass.scaled, data=cancer.table,binomial(link="logit"))
+interaction.model <- glm(cbind(healthy,cancer)  ~ genA*genB + mass.scaled, data=cancer.table,binomial(link="logit"))
 summary(null.model)
 summary(mass.model)
 summary(no.interaction.model)
@@ -253,28 +263,28 @@ simdata.table$pAVG <- pAVG
 #lines(p_null ~ mass, data=sim, lwd=2, col="cyan")
 #lines(p_mass ~ mass, data=sim, lwd=2, col="blue")
 sim <- filter(simdata.table, genotype=='WT')
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='WT'),ylim=c(-1,1))
+{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='WT'),ylim=c(0,1))
 lines(p_null ~ mass, data=sim, lwd=2, col="cyan")
 lines(p_mass ~ mass, data=sim, lwd=2, col="blue")
 lines(p_add ~ mass, data=sim, lwd=2, col="black")
 lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
 
 sim <- filter(simdata.table, genotype=='A')
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='A'),ylim=c(-1,1))
+{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='A'),ylim=c(0,1))
 lines(p_null ~ mass, data=sim, lwd=2, col="cyan")
 lines(p_mass ~ mass, data=sim, lwd=2, col="blue")
 lines(p_add ~ mass, data=sim, lwd=2, col="black")
 lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
 
 sim <- filter(simdata.table, genotype=='B')
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='B'),ylim=c(-1,1))
+{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='B'),ylim=c(0,1))
 lines(p_null ~ mass, data=sim, lwd=2, col="cyan")
 lines(p_mass ~ mass, data=sim, lwd=2, col="blue")
 lines(p_add ~ mass, data=sim, lwd=2, col="black")
 lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
 
 sim <- filter(simdata.table, genotype=='AB')
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='AB'),ylim=c(-1,1))
+{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='AB'),ylim=c(0,1))
 lines(p_null ~ mass, data=sim, lwd=2, col="cyan")
 lines(p_mass ~ mass, data=sim, lwd=2, col="blue")
 lines(p_add ~ mass, data=sim, lwd=2, col="black")
@@ -285,17 +295,19 @@ lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
 
 We can see that interaction model is the model with the lowest AIC; however, the next-highest model, the additive, only has a $\Delta$AIC of 0.81. This indicates the models are not meaningfully different from one another.
 
-<!--TODO: Discuss effect size?-->
-
 ---
 ## Plots
 
-```{r, echo=FALSE}
+Here, we present our raw data compared to the options for our models.
 
-# 
+```{r}
+
 ggplot(data=cancer.table, aes(x=mass, y=cancer.prop, color=genotype)) + geom_jitter()
+
 ```
+
 ---
+
 ## Effect Size Analysis
 
 ```{r}
