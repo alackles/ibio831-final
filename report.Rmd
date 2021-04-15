@@ -325,27 +325,27 @@ summary(interaction.model.avgmass)
 genA <- plogis(interaction.model.avgmass$coefficients[["(Intercept)"]] + 
             interaction.model.avgmass$coefficients[["genA1"]] * 1 +
             interaction.model.avgmass$coefficients[["genB1"]] * 0 +
-            interaction.model.avgmass$coefficients[["genA1:genB1"]] * 1)
+            interaction.model.avgmass$coefficients[["genA1:genB1"]] * 0)
 genB <- plogis(interaction.model.avgmass$coefficients[["(Intercept)"]] + 
             interaction.model.avgmass$coefficients[["genA1"]] * 0 +
             interaction.model.avgmass$coefficients[["genB1"]] * 1 +
-            interaction.model.avgmass$coefficients[["genA1:genB1"]] * 1)
+            interaction.model.avgmass$coefficients[["genA1:genB1"]] * 0)
 genAB <- plogis(interaction.model.avgmass$coefficients[["(Intercept)"]] + 
             interaction.model.avgmass$coefficients[["genA1"]] * 1 +
             interaction.model.avgmass$coefficients[["genB1"]] * 1 +
             interaction.model.avgmass$coefficients[["genA1:genB1"]] * 1)
 
 genA_div_genB <- genA/genB
-genA_div_genB - 1     # 0.08621106
-# Presence of Gene A leads to 8.62% greater change in lifetime cancer risk compared to presence of Gene B under the interaction.model for cats that are 10 to 11 lb mass.
+genA_div_genB - 1     # 0.1
+# Presence of Gene A leads to 10% greater change in lifetime cancer risk compared to presence of Gene B under the interaction.model for cats that are 10 to 11 lb mass.
 
 genAB_div_genA <- genAB/genA
-genAB_div_genA - 1    # -0.3018433
-# Presence of both Gene A and B leads to 30.18% decrease change in lifetime cancer risk compared to presence of Gene A under the interaction.model for cats that are 10 to 11 lb mass.
+genAB_div_genA - 1    # -0.122434
+# Presence of both Gene A and B leads to 12.24% decrease change in lifetime cancer risk compared to presence of Gene A under the interaction.model for cats that are 10 to 11 lb mass.
 
 genAB_div_genB <- genAB/genB
-genAB_div_genB - 1    # -0.2416545
-# Presence of both Gene A and B leads to 24.17% decrease change in lifetime cancer risk compared to presence of Gene B under the interaction.model for cats that are 10 to 11 lb mass.
+genAB_div_genB - 1    # -0.03467742
+# Presence of both Gene A and B leads to 3.47% decrease change in lifetime cancer risk compared to presence of Gene B under the interaction.model for cats that are 10 to 11 lb mass.
 
 ```
 
