@@ -231,13 +231,13 @@ simdata.table <- simdata %>%
 simdata.table$cancer.prop <- (simdata.table$cancer)/(simdata.table$cancer + simdata.table$healthy)
 simdata.table$mass.centered <- simdata.table$mass - 10.5
 # Calculate predictions by hand
-p_null <- inv.logit(null.model$coefficients[["(Intercept)"]] + 
+p_null <- plogis(null.model$coefficients[["(Intercept)"]] + 
             null.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop)                           # mass predictions
-p_add <- inv.logit(no.interaction.model$coefficients[["(Intercept)"]] + 
+p_add <- plogis(no.interaction.model$coefficients[["(Intercept)"]] + 
             no.interaction.model$coefficients[["genA1"]] * simdata.table$cancer.prop +
             no.interaction.model$coefficients[["genB1"]] * simdata.table$cancer.prop +
             no.interaction.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop)                 # additive predictions
-p_inter = inv.logit(interaction.model$coefficients[["(Intercept)"]] +
+p_inter = plogis(interaction.model$coefficients[["(Intercept)"]] +
            interaction.model$coefficients[["genA1"]] * simdata.table$cancer.prop +
            interaction.model$coefficients[["genB1"]] * simdata.table$cancer.prop +
            interaction.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop +
