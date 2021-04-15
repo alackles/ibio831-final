@@ -24,9 +24,12 @@ Your lab is studying cancer-related genes using feline mammary carcinomas (FMCs)
  
 The cancer-related genes A and B are conserved between cat and human. Both genes have been shown to be related to lifetime incidence of HBC, but they have not been studied in cats. You want to know if a cat with gene A has the same lifetime chance of developing a FMC as a cat with gene B, and how that differs when an organism has both genes A and B, or neither gene (wild type).
  
-A cat’s breed, sex, age, and whether or not it is intact all greatly influence their lifetime risk of FMCs (Ohio State University Veterinary Medical Center, 2021). To control for these factors, you use only intact female domestic shorthair cats that are 10 years and older (which show the highest incidence of FMCs) as study subjects. A cat’s mass affects their lifetime chance of cancer as well. 
+A cat’s breed, sex, age, and whether or not it is intact all greatly influence their lifetime risk of FMCs (Ohio State University Veterinary Medical Center, 2021). To control for these factors, you use only intact female domestic shorthair cats that are 10 years and older (which show the highest incidence of FMCs) as study subjects. A cat’s mass affects their lifetime chance of cancer as well. Previous studies have shown, however, that a cat's mass does not interact with any of the four genotypes you are studying. 
 
-Working with the MSU Small Animal Clinic, you recruit 100 participants for the study: 25 with gene A, 25 with gene B, 25 with both genes A and B, and 25 with neither gene. For each cat, you record its genotype, mass at time of death and whether or not it had a FMC in its lifetime. Your null hypothesis is that the lifetime chance of developing a FMC is equal across all four genotypes. Your alternative hypothesis is that the lifetime chance of developing a FMC is different between genotypes.
+Working with the MSU Small Animal Clinic, you recruit 1000 participants for the study: 250 with gene A, 250 with gene B, 250 with both genes A and B, and 250 with neither gene. For each cat, you record its genotype, mass at time of death to the nearest pound and whether or not it had a FMC in its lifetime. Because mass is a factor, you ensure that an equal number of cats of each weight between 7 and 14 pounds are included in the study.
+
+
+Your null hypothesis is that the lifetime chance of developing a FMC is equal across all four genotypes, such that only the cat's mass affects their chance of developing a FMC. Alternative hypothesis 1 is that the lifetime chance of developing a FMC is different between genotypes, but there is no interaction effect between genes A and B. Alternative hypothesis 2 is that the lifetime chance of developing a FMC is different between genotypes, and there is an interaction effect between genes A and B which increases the probablilty of cancer in cats with genotype AB. Finally, alternative hypothesis 3 is that the lifetime chance of developing a FMC is different between genotypes, and there is an interaction effect between genes A and B which decreases the probablilty of cancer in cats with genotype AB.
 
 
 Ferreira D, Martins B, Soares M, Correia J, Adega F, et al. (2019) Gene expression association study in feline mammary carcinomas. PLOS ONE 14(8): e0221776. https://doi.org/10.1371/journal.pone.0221776
@@ -36,9 +39,9 @@ Ohio State University Veterinary Medical Center (2021) Feline Mammary Tumors. Re
 
 ### Hypothesis
 
-_Null Hypothesis_: The probability of cancer is equal across all genotypes.
+_Null Hypothesis_: The probability of cancer is equal across all genotypes, such that only a cat's mass (previously known to affect the probability of FMC) affects their probability of cancer.
 
-_Alternative Hypothesis 1 (no interaction effect)_: A, B, and AB all show a higher probability of cancer than WT, where A+B = AB.
+_Alternative Hypothesis 1 (no interaction effect)_: A, B, and AB all show a higher probability of cancer than WT, where A + B = AB.
 
 _Alternative Hypothesis 2 (interaction effect increases probability)_: A, B, and AB all show a higher probability of cancer than WT, where A + B > AB.
 
@@ -62,7 +65,7 @@ _Predictor variables_: Genotype A, Genotype B, interaction between Genotypes A &
 ## Modeling and Justification
 
 
-**Binomial Distribution**
+### Binomial Distribution
 
 $y \sim Bin(p,N)$
 
@@ -71,7 +74,7 @@ $y \sim Bin(p,N)$
 
 _Justification_: We measure cancer as either present/ absent in each organism. The data simulation evolves N multicellular individuals. We have fixed N number of trials that we can repeat _ad infinitum_. This is a frequentists' approach. Hence, we chose the Binomial distribution.
 
-**Deterministic Function (model) & Joint Probability (likelihood)**
+### Deterministic Function (effects model) & Joint Probability (likelihood)
 
 $counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genotype_A * genotype_B + \gamma * mass + \epsilon$
 
@@ -108,6 +111,7 @@ library(bbmle) # for AICctab function, convient way to compare models
 ```{r simulate}
 ### Same random seed
 set.seed(12345)
+
 #### Number of Datapoints ####
 # Assume a balanced design
 # 2 genes - A and B
@@ -122,7 +126,6 @@ types <- c("WT", "A", "B", "AB")
 genotype <- factor(rep(types, each=n/4))
 
 # We also need a vector to indicate mass for each organism
-weights <- 7:14
 mass <- rep(7:14, length.out=n)
 
 # Chose the values for the parameters (logit transformed)
@@ -150,17 +153,17 @@ lin.pred =  Xmat[,]%*%beta.vec
 exp.p <- exp(lin.pred)/(1+exp(lin.pred))
 
 # Add binomial noise
-cancer.counts <- rbinom(n=n, size=1, prob=exp.p)
+has.cancer <- rbinom(n=n, size=1, prob=exp.p)
 
 #### Combine Data ####
 # Combine type data, mass data, and cancer counts
-df <- data.frame(genA, genB, mass, genotype, cancer.counts)
+df <- data.frame(genA, genB, mass, genotype, has.cancer)
 
 #### Data pre-processing ####
 cancer.table <- df %>%
   group_by(genotype, mass, genA, genB) %>%
-  count(cancer.counts) %>%
-  spread(cancer.counts, n) %>%
+  count(has.cancer) %>%
+  spread(has.cancer, n) %>%
   rename(healthy="0", cancer="1")
 cancer.table$genotype <- factor(cancer.table$genotype, levels=c("WT", "A","B", "AB"))
 cancer.table$cancer.prop <- (cancer.table$cancer)/(cancer.table$cancer + cancer.table$healthy)
@@ -179,13 +182,11 @@ head(cancer.table, n=15)
 ## Parameter estimation method
 
 ```{r models}
-cancer.table$mass.scaled <- cancer.table$mass - 10.5
-null.model <- glm(cbind(healthy,cancer) ~ 1, data=cancer.table,binomial(link="logit"))
-mass.model <- glm(cbind(healthy,cancer) ~ mass.scaled, data=cancer.table,binomial(link="logit"))
-no.interaction.model <- glm(cbind(healthy,cancer)  ~ genA + genB + mass.scaled, data=cancer.table,binomial(link="logit"))
-interaction.model <- glm(cbind(healthy,cancer)  ~ genA*genB + mass.scaled, data=cancer.table,binomial(link="logit"))
+cancer.table$mass.centered <- cancer.table$mass - 10.5
+null.model <- glm(cbind(healthy,cancer) ~ mass.centered, data=cancer.table,binomial(link="logit"))
+no.interaction.model <- glm(cbind(healthy,cancer)  ~ genA + genB + mass.centered, data=cancer.table,binomial(link="logit"))
+interaction.model <- glm(cbind(healthy,cancer)  ~ genA*genB + mass.centered, data=cancer.table,binomial(link="logit"))
 summary(null.model)
-summary(mass.model)
 summary(no.interaction.model)
 summary(interaction.model)
 ```
@@ -198,14 +199,11 @@ Here, we present our raw data compared to the options for our models.
 
 ```{r}
 
-plt <- ggplot(data=cancer.table, aes(x=mass.scaled, y=cancer.prop, color=genotype)) + geom_jitter() + ylim(0,1)
+plt <- ggplot(data=cancer.table, aes(x=mass.centered, y=cancer.prop, color=genotype)) + geom_jitter() + ylim(0,1)
 
-null.plt <- plt + geom_hline(yintercept=inv.logit(coef(null.model)[[1]]))
+coef.mass <- inv.logit(coef(null.model))
+null.plt <- plt + geom_abline(intercept = coef.mass[[1]], slope = coef.mass[[2]])
 null.plt
-
-coef.mass <- inv.logit(coef(mass.model))
-mass.plt <- plt + geom_abline(intercept = coef.mass[[1]], slope = coef.mass[[2]])
-mass.plt
 ```
 
 
@@ -238,29 +236,29 @@ plot(AICc ~ df, data=AICtab)    # dAIC test relative to null.model
 n<-1000
 types <- c("WT", "A", "B", "AB")
 sim_genotype <- factor(rep(types, each=n/4))
-simdata <- data.frame(genotype=sim_genotype,mass=rep(7:14, length.out=n), cancer.counts=rbinom(n=n, size=1, prob=exp.p))
+simdata <- data.frame(genotype=sim_genotype,mass=rep(7:14, length.out=n), has.cancer=rbinom(n=n, size=1, prob=exp.p))
 
 # group by mass category
 simdata.table <- simdata %>%
   group_by(genotype, mass) %>%
-  count(cancer.counts) %>%
-  spread(cancer.counts, n) %>%
+  count(has.cancer) %>%
+  spread(has.cancer, n) %>%
   rename(healthy="0", cancer="1")
 simdata.table$cancer.prop <- (simdata.table$cancer)/(simdata.table$cancer + simdata.table$healthy)
-simdata.table$mass.scaled <- scale(simdata.table$mass)
+simdata.table$mass.centered <- scale(simdata.table$mass)
 
 # Calculate predictions by hand
 p_null <-  inv.logit(null.model$coefficients[["(Intercept)"]] + 0 * simdata.table$cancer.prop)        # null predictions
 p_mass <- inv.logit(mass.model$coefficients[["(Intercept)"]] + 
-            mass.model$coefficients[["mass.scaled"]] * simdata.table$cancer.prop)                           # mass predictions
+            mass.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop)                           # mass predictions
 p_add <- inv.logit(no.interaction.model$coefficients[["(Intercept)"]] + 
             no.interaction.model$coefficients[["genA1"]] * simdata.table$cancer.prop +
             no.interaction.model$coefficients[["genB1"]] * simdata.table$cancer.prop +
-            no.interaction.model$coefficients[["mass.scaled"]] * simdata.table$cancer.prop)                 # additive predictions
+            no.interaction.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop)                 # additive predictions
 #p_inter = inv.logit(interaction.model$coefficients[["(Intercept)"]] + 
 #            interaction.model$coefficients[["genA1"]] * simdata.table$cancer.prop +
 #            interaction.model$coefficients[["genB1"]] * simdata.table$cancer.prop +
-#            interaction.model$coefficients[["mass.scaled"]] * simdata.table$cancer.prop + 
+#            interaction.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop + 
 #            interaction.model$coefficients[["genA1:genB1"]] * simdata.table$cancer.prop)             # interaction predictions
 
 # Calculate model averaged predictions
@@ -327,7 +325,7 @@ avgmass <- mean(cancer.table$mass)     # 10.5
 cancer.table.avgmass <- cancer.table %>% filter(mass == 10 | mass==11)
 
 ## no.interaction.model ##
-no.interaction.model.avgmass <- glm(cancer.prop  ~ genA + genB + mass.scaled, data=cancer.table.avgmass,binomial(link="logit"))
+no.interaction.model.avgmass <- glm(cancer.prop  ~ genA + genB + mass.centered, data=cancer.table.avgmass,binomial(link="logit"))
 
 summary(no.interaction.model.avgmass)
 #Coefficients:
@@ -335,7 +333,7 @@ summary(no.interaction.model.avgmass)
 #(Intercept)   0.2814     1.2537   0.224    0.822
 #genA1         0.2500     1.4873   0.168    0.866
 #genB1         0.3890     1.4887   0.261    0.794
-#mass.scaled   0.2461     3.4604   0.071    0.943
+#mass.centered   0.2461     3.4604   0.071    0.943
 
 genB_div_genA <- no.interaction.model.avgmass$coefficients[["genB1"]] /no.interaction.model.avgmass$coefficients[["genA1"]]
 genB_div_genA - 1     # 0.5557101
@@ -343,7 +341,7 @@ genB_div_genA - 1     # 0.5557101
 
 
 ## interaction.model ##
-interaction.model.avgmass<- glm(cancer.prop  ~ genA*genB + mass.scaled, data=cancer.table.avgmass,binomial(link="logit"))
+interaction.model.avgmass<- glm(cancer.prop  ~ genA*genB + mass.centered, data=cancer.table.avgmass,binomial(link="logit"))
 
 summary(interaction.model.avgmass)
 #Coefficients:
@@ -351,7 +349,7 @@ summary(interaction.model.avgmass)
 #(Intercept)   0.1943     1.4214   0.137    0.891
 #genA1         0.4305     2.0550   0.209    0.834
 #genB1         0.5736     2.0811   0.276    0.783
-#mass.scaled   0.2467     3.4644   0.071    0.943
+#mass.centered   0.2467     3.4644   0.071    0.943
 #genA1:genB1  -0.3811     2.9812  -0.128    0.898
 
 genB_div_genA <- interaction.model.avgmass$coefficients[["genB1"]] /interaction.model.avgmass$coefficients[["genA1"]]
@@ -389,13 +387,13 @@ m <- glm(cancer.prop  ~ genA + genB + mass, data=cancer.table,binomial(link="log
 n<-1000
 types <- c("WT", "A", "B", "AB")
 sim_genotype <- factor(rep(types, each=n/4))
-simdata <- data.frame(genotype=sim_genotype,mass=rep(7:14, length.out=n), cancer.counts=rbinom(n=n, size=1, prob=exp.p))
+simdata <- data.frame(genotype=sim_genotype,mass=rep(7:14, length.out=n), has.cancer=rbinom(n=n, size=1, prob=exp.p))
 
 # group by mass category
 simdata.table <- simdata %>%
   group_by(genotype, mass) %>%
-  count(cancer.counts) %>%
-  spread(cancer.counts, n) %>%
+  count(has.cancer) %>%
+  spread(has.cancer, n) %>%
   rename(healthy="0", cancer="1")
 simdata.table$cancer.prop <- (simdata.table$cancer)/(simdata.table$cancer + simdata.table$healthy)
 
@@ -439,13 +437,13 @@ m <- glm(cancer.prop  ~ genA * genB + mass, data=cancer.table,binomial(link="log
 #### Simulate data to compare observations and predicted means ####
 types <- c("WT", "A", "B", "AB")
 sim_genotype <- factor(rep(types, each=n/4))
-simdata <- data.frame(genotype=sim_genotype,mass=rep(7:14, length.out=n), cancer.counts=rbinom(n=n, size=1, prob=exp.p))
+simdata <- data.frame(genotype=sim_genotype,mass=rep(7:14, length.out=n), has.cancer=rbinom(n=n, size=1, prob=exp.p))
 
 # group by mass category
 simdata.table <- simdata %>%
   group_by(genotype, mass) %>%
-  count(cancer.counts) %>%
-  spread(cancer.counts, n) %>%
+  count(has.cancer) %>%
+  spread(has.cancer, n) %>%
   rename(healthy="0", cancer="1")
 simdata.table$cancer.prop <- (simdata.table$cancer)/(simdata.table$cancer + simdata.table$healthy)
 
