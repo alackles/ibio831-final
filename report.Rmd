@@ -111,56 +111,43 @@ library(bbmle) # for AICctab function, convient way to compare models
 ```{r simulate}
 ### Same random seed
 set.seed(12345)
-
 #### Number of Datapoints ####
 # Assume a balanced design
 # 2 genes - A and B
 # number of cats looked at
 n <- 1000
 #### Data Simulation ####
-
 # Specify a categorical variable which indicates genotype
 genA <- factor(rep(rep(c(0,1), each=n/4),2)) # produces 00...11...00...11...
 genB <- factor(rep(c(0,1), each=n/2)) # produces 0000...1111....
 types <- c("WT", "A", "B", "AB")
 genotype <- factor(rep(types, each=n/4))
-
 # We also need a vector to indicate mass for each organism
 mass <- rep(7:14, length.out=n)
-
 # Chose the values for the parameters (logit transformed)
 # Labeled to make it easier to think about
 # Each element in beta.vec.names indicates the effect of that variable or interaction of variables
 beta.vec.names <- c("WT", "A", "B", "A:B", "mass")
-
 # this is nonlinear transformation on the logit scale, so 0.02 does NOT mean 2% increase in prob. of cancer!!!
 # small change in these params will cause MAJOR changes because on logit scale
 # A:B is the amount of EXTRA change on top of A+B, so anything over zero is an interaction effect
 beta.vec <- c(0, 0.3, 0.2, 0.05, 0.05) 
 names(beta.vec) <- beta.vec.names
-
 #### Model Matrix Creation ####
-
 # Build the design matrix of the interactive combination of genotype and mass
 Xmat = model.matrix(~genA*genB + mass)
-
 #### Create Stochastic Data ####
-
 #Generate the linear predictor (mutliple Xmat by the beta.vec)
 lin.pred =  Xmat[,]%*%beta.vec
-
 #Transform the data with an inverse logit to get the expected proportion of cancerous samples
 exp.p <- exp(lin.pred)/(1+exp(lin.pred))
-
 # Add binomial noise
 has.cancer <- rbinom(n=n, size=1, prob=exp.p)
-
 #### Combine Data ####
 # Combine type data, mass data, and cancer counts
 df <- data.frame(genA, genB, mass, genotype, has.cancer)
 df$genotype <- factor(df$genotype, levels=c("WT", "A","B", "AB"))
 df$mass.centered <- df$mass - 10.5
-
 #### Data pre-processing ####
 cancer.table <- df %>%
   group_by(genotype, mass, genA, genB) %>%
@@ -169,7 +156,6 @@ cancer.table <- df %>%
   rename(healthy="0", cancer="1")
 cancer.table$genotype <- factor(cancer.table$genotype, levels=c("WT", "A","B", "AB"))
 cancer.table$cancer.prop <- (cancer.table$cancer)/(cancer.table$cancer + cancer.table$healthy)
-
 ```
 
 ## Data 
@@ -200,9 +186,7 @@ summary(interaction.model)
 Here, we present our raw data compared to the options for our models.
 
 ```{r}
-
 plt <- ggplot(data=df, aes(x=mass.centered, y=has.cancer, color=genotype, fill=genotype)) + geom_jitter(height=0.02, shape=1) + ylim(0,1)
-
 plt + geom_smooth(method ="glm", method.args = list(family="binomial"))
 ```
 
@@ -217,7 +201,6 @@ We compare our models--a null model, a model with additive effects only, and a m
 #### Model Comparison ####
 models <- list(null.model, no.interaction.model, interaction.model)
 model.names <- c("null", "additive", "interaction")
-
 ### AIC ###
 AICtab = AICctab(null.model, no.interaction.model, interaction.model, base=TRUE, delta=TRUE, weights=TRUE, logLik=TRUE)
 class(AICtab) = 'data.frame'
@@ -239,7 +222,6 @@ n<-1000
 types <- c("WT", "A", "B", "AB")
 sim_genotype <- factor(rep(types, each=n/4))
 simdata <- data.frame(genotype=sim_genotype,mass=rep(7:14, length.out=n), has.cancer=rbinom(n=n, size=1, prob=exp.p))
-
 # group by mass category
 simdata.table <- simdata %>%
   group_by(genotype, mass) %>%
@@ -248,7 +230,6 @@ simdata.table <- simdata %>%
   rename(healthy="0", cancer="1")
 simdata.table$cancer.prop <- (simdata.table$cancer)/(simdata.table$cancer + simdata.table$healthy)
 simdata.table$mass.centered <- simdata.table$mass - 10.5
-
 # Calculate predictions by hand
 p_null <- inv.logit(null.model$coefficients[["(Intercept)"]] + 
             null.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop)                           # mass predictions
@@ -261,18 +242,14 @@ p_inter = inv.logit(interaction.model$coefficients[["(Intercept)"]] +
            interaction.model$coefficients[["genB1"]] * simdata.table$cancer.prop +
            interaction.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop +
            interaction.model$coefficients[["genA1:genB1"]] * simdata.table$cancer.prop)             # interaction predictions
-
 # Calculate model averaged predictions
-
 # weights are from AICtab. This corresponds directly to AICtab.
 pAVG <- p_add * AICtab$weight[1] + p_inter * AICtab$weight[2] + p_null * AICtab$weight[3]
-
 # add to simdata table
 simdata.table$p_null <- p_null
 simdata.table$p_add <- p_add
 simdata.table$p_inter <- p_inter
 simdata.table$pAVG <- pAVG
-
 # Plot observations and the three sets of predictions
 #lines(p_null ~ mass, data=sim, lwd=2, col="cyan")
 #lines(p_mass ~ mass, data=sim, lwd=2, col="blue")
@@ -281,19 +258,16 @@ sim <- filter(simdata.table, genotype=='WT')
 lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
 lines(p_add ~ mass, data=sim, lwd=2, col="black")
 lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
-
 sim <- filter(simdata.table, genotype=='A')
 {plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='A'),ylim=c(0,1))
 lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
 lines(p_add ~ mass, data=sim, lwd=2, col="black")
 lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
-
 sim <- filter(simdata.table, genotype=='B')
 {plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='B'),ylim=c(0,1))
 lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
 lines(p_add ~ mass, data=sim, lwd=2, col="black")
 lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
-
 sim <- filter(simdata.table, genotype=='AB')
 {plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='AB'),ylim=c(0,1))
 lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
@@ -310,165 +284,69 @@ Model averaging doesn't seem to help, which makes sense since parameters are onl
 
 ```{r}
 #### Effect of Genotype on Cancer Risk ####
-
 avgmass <- mean(cancer.table$mass)     # 10.5 
 # Filter cats that are 10 and 11 lb so that we evaluate on average 10.5 lb cats 
 cancer.table.avgmass <- cancer.table %>% filter(mass == 10 | mass==11)
 
 ## no.interaction.model ##
-no.interaction.model.avgmass <- glm(cancer.prop  ~ genA + genB + mass.centered, data=cancer.table.avgmass,binomial(link="logit"))
-
+# For simplicity's sake, we are only comparing gene presence and will ignore mass for now.
+no.interaction.model.avgmass <- glm(cbind(healthy,cancer)  ~ genA + genB, data=cancer.table.avgmass,binomial(link="logit"))
 summary(no.interaction.model.avgmass)
+
 #Coefficients:
 #            Estimate Std. Error z value Pr(>|z|)
-#(Intercept)   0.2814     1.2537   0.224    0.822
-#genA1         0.2500     1.4873   0.168    0.866
-#genB1         0.3890     1.4887   0.261    0.794
-#mass.centered   0.2461     3.4604   0.071    0.943
+#(Intercept)  -0.2811     0.2248  -1.250    0.211
+#genA1        -0.2499     0.2660  -0.939    0.347
+#genB1        -0.3887     0.2662  -1.460    0.144
 
-genB_div_genA <- no.interaction.model.avgmass$coefficients[["genB1"]] /no.interaction.model.avgmass$coefficients[["genA1"]]
-genB_div_genA - 1     # 0.5557101
-# Presence of Gene B leads to 55.57% greater change in lifetime cancer risk compared to presence of Gene A under the no.interaction.model for cats that are 10 to 11 lb mass.
+genA <- plogis(no.interaction.model.avgmass$coefficients[["(Intercept)"]] + 
+            no.interaction.model.avgmass$coefficients[["genA1"]] * 1 +
+            no.interaction.model.avgmass$coefficients[["genB1"]] * 0)
+genB <- plogis(no.interaction.model.avgmass$coefficients[["(Intercept)"]] + 
+            no.interaction.model.avgmass$coefficients[["genA1"]] * 0 +
+            no.interaction.model.avgmass$coefficients[["genB1"]] * 1)
 
+genA_div_genB <- genA/genB
+genA_div_genB - 1     # 0.09377184
+# Presence of Gene A leads to 9.38% greater change in lifetime cancer risk compared to presence of Gene B under the no.interaction.model for cats that are 10 to 11 lb mass.
 
 ## interaction.model ##
-interaction.model.avgmass<- glm(cancer.prop  ~ genA*genB + mass.centered, data=cancer.table.avgmass,binomial(link="logit"))
-
+# For simplicity's sake, we are only comparing gene presence and will ignore mass for now.
+interaction.model.avgmass<- glm(cbind(healthy,cancer)  ~ genA*genB, data=cancer.table.avgmass,binomial(link="logit"))
 summary(interaction.model.avgmass)
+
 #Coefficients:
 #            Estimate Std. Error z value Pr(>|z|)
-#(Intercept)   0.1943     1.4214   0.137    0.891
-#genA1         0.4305     2.0550   0.209    0.834
-#genB1         0.5736     2.0811   0.276    0.783
-#mass.centered   0.2467     3.4644   0.071    0.943
-#genA1:genB1  -0.3811     2.9812  -0.128    0.898
+#(Intercept)  -0.1942     0.2552  -0.761    0.447
+#genA1        -0.4284     0.3674  -1.166    0.244
+#genB1        -0.5713     0.3720  -1.536    0.125
+#genA1:genB1   0.3771     0.5330   0.707    0.479
 
-genB_div_genA <- interaction.model.avgmass$coefficients[["genB1"]] /interaction.model.avgmass$coefficients[["genA1"]]
-genB_div_genA - 1     # 0.3325344
-# Presence of Gene B leads to 33.25% greater change in lifetime cancer risk compared to presence of Gene A under the interaction.model for cats that are 10 to 11 lb mass.
+genA <- plogis(interaction.model.avgmass$coefficients[["(Intercept)"]] + 
+            interaction.model.avgmass$coefficients[["genA1"]] * 1 +
+            interaction.model.avgmass$coefficients[["genB1"]] * 0 +
+            interaction.model.avgmass$coefficients[["genA1:genB1"]] * 1)
+genB <- plogis(interaction.model.avgmass$coefficients[["(Intercept)"]] + 
+            interaction.model.avgmass$coefficients[["genA1"]] * 0 +
+            interaction.model.avgmass$coefficients[["genB1"]] * 1 +
+            interaction.model.avgmass$coefficients[["genA1:genB1"]] * 1)
+genAB <- plogis(interaction.model.avgmass$coefficients[["(Intercept)"]] + 
+            interaction.model.avgmass$coefficients[["genA1"]] * 1 +
+            interaction.model.avgmass$coefficients[["genB1"]] * 1 +
+            interaction.model.avgmass$coefficients[["genA1:genB1"]] * 1)
 
-genAB_div_genA <- interaction.model.avgmass$coefficients[["genA1:genB1"]] /interaction.model.avgmass$coefficients[["genA1"]]
-genAB_div_genA - 1     # -1.885328
-# Presence of both Gene A and B leads to 188.53% decrease change in lifetime cancer risk compared to presence of Gene A under the interaction.model for cats that are 10 to 11 lb mass.
+genA_div_genB <- genA/genB
+genA_div_genB - 1     # 0.08621106
+# Presence of Gene A leads to 8.62% greater change in lifetime cancer risk compared to presence of Gene B under the interaction.model for cats that are 10 to 11 lb mass.
 
-genAB_div_genB <- interaction.model.avgmass$coefficients[["genA1:genB1"]] /interaction.model.avgmass$coefficients[["genB1"]]
-genAB_div_genB - 1     # -1.664394
-# Presence of both Gene A and B leads to 166.44% decrease change in lifetime cancer risk compared to presence of Gene B under the interaction.model for cats that are 10 to 11 lb mass.
+genAB_div_genA <- genAB/genA
+genAB_div_genA - 1    # -0.3018433
+# Presence of both Gene A and B leads to 30.18% decrease change in lifetime cancer risk compared to presence of Gene A under the interaction.model for cats that are 10 to 11 lb mass.
 
+genAB_div_genB <- genAB/genB
+genAB_div_genB - 1    # -0.2416545
+# Presence of both Gene A and B leads to 24.17% decrease change in lifetime cancer risk compared to presence of Gene B under the interaction.model for cats that are 10 to 11 lb mass.
 
-#### Effect of Mass on Cancer Risk ####
-unscaled_mass_model <- glm(cancer.prop ~ mass, data=cancer.table,binomial(link="logit"))
-control <- inv.logit(unscaled_mass_model$coefficients[['(Intercept)']])
-account_for_mass <- inv.logit(unscaled_mass_model$coefficients[['mass']])
-effect_of_accounting_for_mass <- account_for_mass - control
-effect_of_accounting_for_mass         #  0.1018492
-
-# The effect for every increased pound in a cat's mass is -10.8% increase in lifetime cancer risk.  
-```
----
-## Confidence Intervals
-
-```{r}
-#### 95% Confidence Interval for the 2 significant models (result of model comparison) ####
-
-### no.interaction.model ###
-#m = glm(cancer.prop ~ mass, data=cancer.table,family="binomial")
-m <- glm(cancer.prop  ~ genA + genB + mass, data=cancer.table,binomial(link="logit"))
-#### Simulate data to compare observations and predicted means ####
-n<-1000
-types <- c("WT", "A", "B", "AB")
-sim_genotype <- factor(rep(types, each=n/4))
-simdata <- data.frame(genotype=sim_genotype,mass=rep(7:14, length.out=n), has.cancer=rbinom(n=n, size=1, prob=exp.p))
-
-# group by mass category
-simdata.table <- simdata %>%
-  group_by(genotype, mass) %>%
-  count(has.cancer) %>%
-  spread(has.cancer, n) %>%
-  rename(healthy="0", cancer="1")
-simdata.table$cancer.prop <- (simdata.table$cancer)/(simdata.table$cancer + simdata.table$healthy)
-
-# 95% confidence interval calculation
-pred.m <- predict(m, data=simdata.table, se.fit=TRUE, type='response')
-pred <- pred.m$fit
-lower <- pred.m$fit - 1.96 * pred.m$se.fit
-upper <- pred.m$fit + 1.96 * pred.m$se.fit
-
-simdata.table$pred <- pred
-simdata.table$lower <- lower
-simdata.table$upper <- upper
-
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='WT'), ylim = c(0,1))
-lines(pred ~ mass, data=filter(simdata.table, genotype=='WT'))
-lines(lower ~ mass, data=filter(simdata.table, genotype=='WT'))
-lines(upper ~ mass, data=filter(simdata.table, genotype=='WT'))}
-
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='A'), ylim = c(0,1))
-lines(pred ~ mass, data=filter(simdata.table, genotype=='A'))
-lines(lower ~ mass, data=filter(simdata.table, genotype=='A'))
-lines(upper ~ mass, data=filter(simdata.table, genotype=='A'))}
-
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='B'), ylim = c(0,1))
-lines(pred ~ mass, data=filter(simdata.table, genotype=='B'))
-lines(lower ~ mass, data=filter(simdata.table, genotype=='B'))
-lines(upper ~ mass, data=filter(simdata.table, genotype=='B'))}
-
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='AB'), ylim = c(0,1))
-lines(pred ~ mass, data=filter(simdata.table, genotype=='AB'))
-lines(lower ~ mass, data=filter(simdata.table, genotype=='AB'))
-lines(upper ~ mass, data=filter(simdata.table, genotype=='AB'))}
-# This was a poor model.
-
-
-
-
-
-### interaction.model ###
-m <- glm(cancer.prop  ~ genA * genB + mass, data=cancer.table,binomial(link="logit"))
-#### Simulate data to compare observations and predicted means ####
-types <- c("WT", "A", "B", "AB")
-sim_genotype <- factor(rep(types, each=n/4))
-simdata <- data.frame(genotype=sim_genotype,mass=rep(7:14, length.out=n), has.cancer=rbinom(n=n, size=1, prob=exp.p))
-
-# group by mass category
-simdata.table <- simdata %>%
-  group_by(genotype, mass) %>%
-  count(has.cancer) %>%
-  spread(has.cancer, n) %>%
-  rename(healthy="0", cancer="1")
-simdata.table$cancer.prop <- (simdata.table$cancer)/(simdata.table$cancer + simdata.table$healthy)
-
-# 95% confidence interval calculation
-pred.m <- predict(m, data=simdata.table, se.fit=TRUE, type='response')
-pred <- pred.m$fit
-lower <- pred.m$fit - 1.96 * pred.m$se.fit
-upper <- pred.m$fit + 1.96 * pred.m$se.fit
-
-simdata.table$pred <- pred
-simdata.table$lower <- lower
-simdata.table$upper <- upper
-
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='WT'), ylim = c(0,1))
-lines(pred ~ mass, data=filter(simdata.table, genotype=='WT'))
-lines(lower ~ mass, data=filter(simdata.table, genotype=='WT'))
-lines(upper ~ mass, data=filter(simdata.table, genotype=='WT'))}
-
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='A'), ylim = c(0,1))
-lines(pred ~ mass, data=filter(simdata.table, genotype=='A'))
-lines(lower ~ mass, data=filter(simdata.table, genotype=='A'))
-lines(upper ~ mass, data=filter(simdata.table, genotype=='A'))}
-
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='B'), ylim = c(0,1))
-lines(pred ~ mass, data=filter(simdata.table, genotype=='B'))
-lines(lower ~ mass, data=filter(simdata.table, genotype=='B'))
-lines(upper ~ mass, data=filter(simdata.table, genotype=='B'))}
-
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='AB'), ylim = c(0,1))
-lines(pred ~ mass, data=filter(simdata.table, genotype=='AB'))
-lines(lower ~ mass, data=filter(simdata.table, genotype=='AB'))
-lines(upper ~ mass, data=filter(simdata.table, genotype=='AB'))}
-
-# This was a poor model.
 ```
 
 ---
