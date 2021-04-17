@@ -1,22 +1,24 @@
 ---
-title: "Project"
-author: "Acacia, Kate, Julia"
-date: "3/23/2021"
+title: "IBIO 831 Group Project"
+subtitle: "The Effect of Genotype on Lifetime Incidence of Feline Mammary Carcinoma"
+author: "Acacia Ackles, Kate Skocelas and Julia Zheng"
+date: "4/21/2021"
 output: 
       html_document: default
       pdf_document: default
 ---
 
-```{r setup, include=FALSE}
-set.seed(1)
+```{r setup R Markdown environment, include=FALSE}
+
 library(knitr)
-opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)            
+opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)    
+
 ```
 
 ## Scenario
-Genes A and B have both been shown to be related to lifetime chance of cancer. We want to know if an organism with gene A has the same chance of cancer as an organism with gene B, and how that differs when an organism has both genes A and B, or neither gene. We need to include the covariate of the organism’s mass, because we know this also affects the lifetime chance of cancer. 
+Genes A and B have both been shown to be related to lifetime chance of cancer. We want to know if an organism with gene A has the same chance of cancer as an organism with gene B, and how that differs when an organism has both genes A and B, or neither gene (wildtype). We need to include the covariate of the organism’s mass, because we know this also affects the lifetime chance of cancer. 
 
-We sample N organisms of each of the four genotypes, and we record their body mass and whether or not cancer is present in that organism. 
+We sample $N$ organisms of each of the four genotypes, and we record their body mass to the nearest pound and whether or not cancer is present in that organism. 
 
 ### Story
 
@@ -24,10 +26,9 @@ Your lab is studying cancer-related genes using feline mammary carcinomas (FMCs)
  
 The cancer-related genes A and B are conserved between cat and human. Both genes have been shown to be related to lifetime incidence of HBC, but they have not been studied in cats. You want to know if a cat with gene A has the same lifetime chance of developing a FMC as a cat with gene B, and how that differs when an organism has both genes A and B, or neither gene (wild type).
  
-A cat’s breed, sex, age, and whether or not it is intact all greatly influence their lifetime risk of FMCs (Ohio State University Veterinary Medical Center, 2021). To control for these factors, you use only intact female domestic shorthair cats that are 10 years and older (which show the highest incidence of FMCs) as study subjects. A cat’s mass affects their lifetime chance of cancer as well. Previous studies have shown, however, that a cat's mass does not interact with any of the four genotypes you are studying. 
+A cat’s breed, sex, age, and whether or not it is intact all greatly influence their lifetime risk of FMCs (Ohio State University Veterinary Medical Center, 2021). To control for these factors, you use only intact female domestic shorthair cats that are 10 years and older (which show the highest incidence of FMCs) as study subjects. A cat’s mass affects their lifetime chance of cancer as well. Previous studies have shown, however, that a cat's mass does not interact with any of the four genotypes you are studying. You only include cats weighing between 7 and 14 pounds (the healthy weight range adult female domestic shorthair cats) in the study to control for the effect of obesity on FMC risk. 
 
-Working with the MSU Small Animal Clinic, you recruit 1000 participants for the study: 250 with gene A, 250 with gene B, 250 with both genes A and B, and 250 with neither gene. For each cat, you record its genotype, mass at time of death to the nearest pound and whether or not it had a FMC in its lifetime. Because mass is a factor, you ensure that an equal number of cats of each weight between 7 and 14 pounds are included in the study.
-
+Working with the MSU Small Animal Clinic, you recruit 1000 participants for the study: 250 with gene A, 250 with gene B, 250 with both genes A and B, and 250 with neither gene. For each cat, you record its genotype, mass at time of death to the nearest pound, and whether or not it had a FMC in its lifetime. Because mass is a factor, you ensure that an equal number of cats of each weight between 7 and 14 pounds are included in the study.
 
 Your null hypothesis is that the lifetime chance of developing a FMC is equal across all four genotypes, such that only the cat's mass affects their chance of developing a FMC. Alternative hypothesis 1 is that the lifetime chance of developing a FMC is different between genotypes, but there is no interaction effect between genes A and B. Alternative hypothesis 2 is that the lifetime chance of developing a FMC is different between genotypes, and there is an interaction effect between genes A and B which increases the probablilty of cancer in cats with genotype AB. Finally, alternative hypothesis 3 is that the lifetime chance of developing a FMC is different between genotypes, and there is an interaction effect between genes A and B which decreases the probablilty of cancer in cats with genotype AB.
 
@@ -39,7 +40,7 @@ Ohio State University Veterinary Medical Center (2021) Feline Mammary Tumors. Re
 
 ### Hypothesis
 
-_Null Hypothesis_: The probability of cancer is equal across all genotypes, such that only a cat's mass (previously known to affect the probability of FMC) affects their probability of cancer.
+_Null Hypothesis_: The probability of cancer is equal across all genotypes, such that only a cat's mass (already known to affect the probability of FMC) affects their probability of cancer.
 
 _Alternative Hypothesis 1 (no interaction effect)_: A, B, and AB all show a higher probability of cancer than WT, where A + B = AB.
 
@@ -48,18 +49,17 @@ _Alternative Hypothesis 2 (interaction effect increases probability)_: A, B, and
 _Alternative Hypothesis 3 (interaction effect decreases probability)_: A, B, and AB all show a higher probability of cancer than WT, where A + B < AB.
 
 
-
 ### Variables
 
 _Genotypes_: WT (neither A nor B), A, B, and AB. A and B each have an incidence rate for cancer.
 
-_Mass_: a continuous variable between 7 and 15 lbs
+_Mass_: A continuous variable between 7 and 14 lbs (rounded to the nearest pound).
 
 _Genotype A x Genotype B_: Interaction effects
 
-_Response variable_: Presence or absence of cancer in the organism (0/1) 
+_Response variable_: Presence (1) or absence (0) of cancer in the organism.
 
-_Predictor variables_: Genotype A, Genotype B, interaction between Genotypes A & B, and organism mass 
+_Predictor variables_: Genotype A, Genotype B, interaction between Genotypes A & B, and organism mass.
 
 
 ## Modeling and Justification
@@ -69,285 +69,438 @@ _Predictor variables_: Genotype A, Genotype B, interaction between Genotypes A &
 
 $y \sim Bin(p,N)$
 
-- $p$ is probability of cancer
+- $p$ is probability of FMC
 - $N$ is total number of individuals
 
-_Justification_: We measure cancer as either present/ absent in each organism. The data simulation evolves N multicellular individuals. We have fixed N number of trials that we can repeat _ad infinitum_. This is a frequentists' approach. Hence, we chose the Binomial distribution.
+_Justification_: We measure FMC as either present or absent in each cat. The data simulation generates $N$ cats. We have a fixed $N$ number of trials that we can repeat _ad infinitum_. This is a frequentists' approach. Hence, we chose the Binomial distribution.
 
 ### Deterministic Function (effects model) & Joint Probability (likelihood)
 
-$counts = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genotype_A * genotype_B + \gamma * mass + \epsilon$
-
-- $counts$ = expected number of organisms with cancer present
-- $\alpha$ = (intercept) -- expected incidence rate of cancer in wildtype reference
-- $\beta_1$ = constant for $genotype_A$ (how much gene A influences incidence of cancer)
-- $\beta_2$ = constant for $genotype_B$ (how much gene B influences incidence of cancer)
-- $\delta$ = slope term indicating the interaction between genes A and B (how much genes A and B combined influence incidence of cancer)
-- $\gamma$ = constant for mass (how much organism mass influences incidence of cancer)
-- $\epsilon$ = randomness pulled from binomial distribution
-  + $\epsilon \sim Bin(p,N)$
+$cancer.prob = \alpha + \beta_1 * genotype_A + \beta_2 * genotype_B + \delta * genotype_A * genotype_B + \gamma * mass + \epsilon$
+  
+- $cancer.prob$ = probability of the cat having FMC within its lifetime
+- $\alpha$ = (intercept) expected probability of FMC in wildtype reference
+- $\beta_1$ = constant for $genotype_A$ (how much gene A influences probability of FMC)
+- $\beta_2$ = constant for $genotype_B$ (how much gene B influences probability of FMC)
+- $\delta$ = slope term indicating the interaction between genes A and B (how much genes A and B combined influence probability of FMC)
+- $\gamma$ = constant for mass (how much a cat's mass influences their probability of FMC)
+- $\epsilon$ = randomness pulled from a binomial distribution where $\epsilon \sim Bin(p,N)$
 
 ---
 
 ## Simulate the Data
 
-```{r packages, message=FALSE}
-#Install packages if necessary
+We begin by installing and loading the necessary R packages for simulating, analyzing, modeling, and plotting our data. GGplot2's global default theme is also updated to center plot titles to avoid individually centering each plot title in the report. 
+
+```{r install and load R packages, message=FALSE}
+
+### Install packages if necessary ###
+
 #install.packages("dplyr")
 #install.packages("ggplot2")
 #install.packages("GGally")
 #install.packages("lme4")
 #install.packages("boot")
 #install.packages("bbmle")
-# Load packages
-library(dplyr) # for data
-library(tidyr) # also data
-library(ggplot2) # for plotting
+
+
+### Load packages ###
+
+library(dplyr) # for data wrangling
+library(tidyr) # for data wrangling
 library(GGally) # for ggpairs function, pairwise plotting of multiple variables
 library(lme4) # for GLMMs
-library(boot) # inv.logit function
-library(bbmle) # for AICctab function, convient way to compare models
+library(boot) # for inv.logit function
+library(bbmle) # for AICctab function to compare models
+library(ggplot2) # for plotting
+
+# Globally update the ggplot theme to center titles on all plots
+theme_update(plot.title = element_text(hjust = 0.5))
+
 ```
-```{r simulate}
-### Same random seed
-set.seed(12345)
-#### Number of Datapoints ####
-# Assume a balanced design
-# 2 genes - A and B
-# number of cats looked at
+
+Next, we simulate the data described in the scenario above. The raw data is then pre-processed into a table format that is easier to use for analysis.
+
+```{r simulate data, message=FALSE}
+
+### Data Simulation ###
+
+# set random seed to allow data to be easily reproduced.
+set.seed(1)
+
+# number of data points (n cats)
+# Assume a balanced design with 2 genes (A and B) 
 n <- 1000
-#### Data Simulation ####
+
 # Specify a categorical variable which indicates genotype
 genA <- factor(rep(rep(c(0,1), each=n/4),2)) # produces 00...11...00...11...
 genB <- factor(rep(c(0,1), each=n/2)) # produces 0000...1111....
 types <- c("WT", "A", "B", "AB")
 genotype <- factor(rep(types, each=n/4))
-# We also need a vector to indicate mass for each organism
-mass <- rep(7:14, length.out=n)
-# Chose the values for the parameters (logit transformed)
-# Labeled to make it easier to think about
+mass <- rep(7:14, length.out=n) # Vector of mass for each cat to the nearest pound
+
+
+### Set parameter values (logit transformed) ###
+
 # Each element in beta.vec.names indicates the effect of that variable or interaction of variables
 beta.vec.names <- c("WT", "A", "B", "A:B", "mass")
-# this is nonlinear transformation on the logit scale, so 0.02 does NOT mean 2% increase in prob. of cancer!!!
-# small change in these params will cause MAJOR changes because on logit scale
-# A:B is the amount of EXTRA change on top of A+B, so anything over zero is an interaction effect
-beta.vec <- c(0, 0.3, 0.2, 0.05, 0.05) 
+beta.vec <- c(-1.8, 0.7, 0.6, 0.09, 0.0001) 
 names(beta.vec) <- beta.vec.names
-#### Model Matrix Creation ####
+
+
+### Model Matrix Creation ###
+
 # Build the design matrix of the interactive combination of genotype and mass
 Xmat = model.matrix(~genA*genB + mass)
-#### Create Stochastic Data ####
+
+
+### Create Stochastic Data ###
+
 #Generate the linear predictor (mutliple Xmat by the beta.vec)
 lin.pred =  Xmat[,]%*%beta.vec
 #Transform the data with an inverse logit to get the expected proportion of cancerous samples
 exp.p <- exp(lin.pred)/(1+exp(lin.pred))
 # Add binomial noise
 has.cancer <- rbinom(n=n, size=1, prob=exp.p)
-#### Combine Data ####
-# Combine type data, mass data, and cancer counts
+
+
+### Combine Data ###
+
+# Combine type data, centered mass data, and cancer counts
 df <- data.frame(genA, genB, mass, genotype, has.cancer)
 df$genotype <- factor(df$genotype, levels=c("WT", "A","B", "AB"))
 df$mass.centered <- df$mass - 10.5
-#### Data pre-processing ####
+
+
+###Data pre-processing ###
+
 cancer.table <- df %>%
-  group_by(genotype, mass, genA, genB) %>%
+  group_by(genotype, mass, mass.centered, genA, genB) %>%
   count(has.cancer) %>%
   spread(has.cancer, n) %>%
   rename(healthy="0", cancer="1")
 cancer.table$genotype <- factor(cancer.table$genotype, levels=c("WT", "A","B", "AB"))
-cancer.table$cancer.prop <- (cancer.table$cancer)/(cancer.table$cancer + cancer.table$healthy)
+cancer.table$cancer.prob <- (cancer.table$cancer)/(cancer.table$cancer + cancer.table$healthy)
+
 ```
 
-## Data 
+## Data
 
-```{r}
-# Look at our data... a little bit
+After generating the data, we view the heads of the raw data frame and pre-processed data table to ensure that they were correctly constructed. 
+
+```{r examine head of data, message=FALSE}
+
+# View raw dataframe
 head(df, n=15)
+
+# View pre-processed data table
 head(cancer.table, n=15)
+
 ```
----
-
-## Parameter estimation method
-
-```{r models}
-cancer.table$mass.centered <- cancer.table$mass - 10.5
-null.model <- glm(cbind(healthy,cancer) ~ mass.centered, data=cancer.table,binomial(link="logit"))
-no.interaction.model <- glm(cbind(healthy,cancer)  ~ genA + genB + mass.centered, data=cancer.table,binomial(link="logit"))
-interaction.model <- glm(cbind(healthy,cancer)  ~ genA*genB + mass.centered, data=cancer.table,binomial(link="logit"))
-summary(null.model)
-summary(no.interaction.model)
-summary(interaction.model)
-```
-
 ---
 
 ## Plots
 
-Here, we present our raw data compared to the options for our models.
+Here, we plot our raw data to get a better sense of what it looks like. We see that the probability of FMC increases with mass across all genotypes. At all masses, the wildtype individuals have the lowest probability of FMC and individuals with genotype AB have the highest probability of FMC . 
 
-```{r}
-plt <- ggplot(data=df, aes(x=mass.centered, y=has.cancer, color=genotype, fill=genotype)) + geom_jitter(height=0.02, shape=1) + ylim(0,1)
+```{r plot raw data, message=FALSE}
+
+plt <- ggplot(data=df, aes(x=mass, y=has.cancer, color=genotype, fill=genotype)) + 
+              geom_jitter(height=0.02, shape=1) + 
+              labs(title="Lifetime Probability of FMC by Mass and Genotype", 
+                   x="Mass to the Nearest Pound", 
+                   y="Lifetime Probabilty of FMC")
+
 plt + geom_smooth(method ="glm", method.args = list(family="binomial"))
+
 ```
 
+
+---
+
+## Parameter Estimation Method
+
+To estimate the parameters used, we construct three generalized linear models (GLMs): a null model, no interaction model, and interaction model. 
+
+### Null Model
+
+The first is the null model, which represents our null hypothesis that the probability of cancer is equal across all genotypes, such that only a cat's mass (already known to affect the probability of FMC) affects their probability of cancer.
+
+```{r null model, message=FALSE}
+
+# create null model
+null.model <- glm(cbind(healthy,cancer) ~ mass.centered, 
+                  data=cancer.table, binomial(link="logit"))
+
+# print null model summary
+summary(null.model)
+
+```
+
+We see that mass has a statistically significant effect (p < 0.0001) on the probability of FMC within a cat's lifetime. The model's null deviance is high, indicating the data cannot be modeled well with the intercept alone. Though it is lower than the null deviance, the model's residual deviance is also high, indicating the trained model is not a good fit for the data either. 
+
+
+### No Interaction Model
+
+The second GLM we construct is the no interaction model, representing alternative hypothesis 1: the lifetime chance of developing a FMC is different between genotypes, but there is no interaction effect between genes A and B.
+
+```{r no interaction model, message=FALSE}
+
+# create no interaction model
+no.interaction.model <- glm(cbind(healthy,cancer)  ~ genA + genB + mass.centered,
+                            data=cancer.table, binomial(link="logit"))
+
+# print no interaction model summary
+summary(no.interaction.model)
+
+```
+
+In second model's results summary, we see that mass, gene A and gene B are all statistically significant (p < 0.0001). The residual deviance and AIC of this model are much lower than the residual deviance and AIC of the null model, indicating that this model is a significanlly better fit for our data.
+
+### Interaction Model
+
+Finally, the third GLM we construct is the interaction model, representing alternative hypothesis 2 and 3, which state that the lifetime chance of developing a FMC is different between genotypes and there is an interaction effect between genes A and B.
+
+```{r interaction model summary, message=FALSE}
+
+# create interaction model
+interaction.model <- glm(cbind(healthy,cancer)  ~ genA*genB + mass.centered, 
+                         data=cancer.table, binomial(link="logit"))
+
+# print interaction model summary
+summary(interaction.model)
+
+```
+Again we see that mass, gene A and gene B all have statistically significant (p < 0.0001) effect on the probability of FMC within a cat's lifetime. Genotype AB is not statistically significant effect, however. The residual deviance is 2.589 lower than the no interation model's, but the AIC score is higher because it is a more complex model.  
 
 ---
 
 ## Statistical Test of Models and Model Comparison
 
-We compare our models--a null model, a model with additive effects only, and a model with interaction effects--using Akaike Information Content (AIC). The following table lists the models from lowest to highest AIC ("best" to "worst" model, loosely).
+To more accuratly compare our models, we used the Akaike Information Content (AIC). The following table lists the models from lowest to highest AIC ("best" to "worst" model, loosely).
 
-```{r comparison}
+```{r model comparison, message=FALSE}
+
 #### Model Comparison ####
 models <- list(null.model, no.interaction.model, interaction.model)
 model.names <- c("null", "additive", "interaction")
+
 ### AIC ###
-AICtab = AICctab(null.model, no.interaction.model, interaction.model, base=TRUE, delta=TRUE, weights=TRUE, logLik=TRUE)
+AICtab = AICtab(null.model, no.interaction.model, interaction.model, base=TRUE, delta=TRUE, weights=TRUE, logLik=TRUE)
 class(AICtab) = 'data.frame'
+# print table
 AICtab
-plot(logLik ~ df, data=AICtab)  # loglikelihood ratio test relative to null.model
-plot(AICc ~ df, data=AICtab)    # dAIC test relative to null.model
+
+# add name for later plotting
+AICtab$model <- c("no interaction", "interaction", "null")
+
+```
+We see that the no interaction model and interaction model (the models for our alternative hypotheses) both have a dAIC (delta AIC) > 2 and are thus significantly different from the null model. The null model has such a high AIC score, in fact, that we can be confident that it is not the best model for our data, and we can reject our null hypothesis. 
+
+Of the models for our alternative hypotheses, the interaction model has the lowest AIC score, meaning it could be the best fitting model. However, the no interaction model's AIC score is only one higher, so we need to more closely compare these two models. 
+
+
+``` {r logLik plot, message=FALSE}
+
+# Loglikelihood Ratio Test of Models Relaitive to Null Model
+ggplot(data=AICtab, aes(x=df, y=logLik, color=model)) +
+  geom_point() +
+  labs(title="Loglikelihood Relaitive to Null Model by Degrees of Freedom", 
+       x="Degrees of Freedom", 
+       y="Loglikelihood Relative to Null Model")
+
 ```
 
-Based on the logLik plots relative to degrees of freedom, the jump in logliklihood occurs for no.interaction.model.Based on the AICc relative degrees of freedom plot, no.interaction.model and interaction.model are both dAIC > 2 and are thus significantly different from null.model.
+When we compare each model's loglikelihood relative to the null model to its degrees of freedom, we see that the no interaction model and interaction model have very similar loglikelihoods, but the interaction model has one higher degrees of freedom. This means that the interaction model is more complex than the no interaction model without significantly improving the loglikelihood relative to the null model. 
 
 
-## Model Averaging
+```{r dAIC plot, message=FALSE}
 
-We decided to try model averaging with the top three models from AICtab whose weights total 96%. 
+# dAIC test relative to null.model
+ggplot(data=AICtab, aes(x=df, y=AIC, color=model)) +
+  geom_point() +
+  labs(title="Difference in AIC from Minimum-AIC Model by Degrees of Freedom", 
+       x="Degrees of Freedom", 
+       y="Difference in AIC from Minimum-AIC Model")
 
-```{r}
+```
+
+When we compare each model's difference in AIC from the minimum-AIC model to their degrees of freedom, we see that there is almost no difference in AIC between our interaction and no interaction models.
+
+### Model Averaging
+
+We decided to try averaging the interaction and no interaction models because they are so close, to see if we can create a better fitting model.  
+
+```{r model averaging, message=FALSE}
+
 # Data simulation
 n<-1000
 types <- c("WT", "A", "B", "AB")
 sim_genotype <- factor(rep(types, each=n/4))
-simdata <- data.frame(genotype=sim_genotype,mass=rep(7:14, length.out=n), has.cancer=rbinom(n=n, size=1, prob=exp.p))
+simdata <- data.frame(genotype=sim_genotype, mass=rep(7:14, length.out=n), has.cancer=rbinom(n=n, size=1, prob=exp.p))
+
 # group by mass category
 simdata.table <- simdata %>%
   group_by(genotype, mass) %>%
   count(has.cancer) %>%
   spread(has.cancer, n) %>%
   rename(healthy="0", cancer="1")
-simdata.table$cancer.prop <- (simdata.table$cancer)/(simdata.table$cancer + simdata.table$healthy)
+simdata.table$cancer.prob <- (simdata.table$cancer)/(simdata.table$cancer + simdata.table$healthy)
 simdata.table$mass.centered <- simdata.table$mass - 10.5
+
 # Calculate predictions by hand
-p_null <- plogis(null.model$coefficients[["(Intercept)"]] + 
-            null.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop)                           # mass predictions
+# additive predictions
 p_add <- plogis(no.interaction.model$coefficients[["(Intercept)"]] + 
-            no.interaction.model$coefficients[["genA1"]] * simdata.table$cancer.prop +
-            no.interaction.model$coefficients[["genB1"]] * simdata.table$cancer.prop +
-            no.interaction.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop)                 # additive predictions
+            no.interaction.model$coefficients[["genA1"]] * simdata.table$cancer.prob +
+            no.interaction.model$coefficients[["genB1"]] * simdata.table$cancer.prob +
+            no.interaction.model$coefficients[["mass.centered"]] * simdata.table$cancer.prob)                
+#interaction predictions
 p_inter = plogis(interaction.model$coefficients[["(Intercept)"]] +
-           interaction.model$coefficients[["genA1"]] * simdata.table$cancer.prop +
-           interaction.model$coefficients[["genB1"]] * simdata.table$cancer.prop +
-           interaction.model$coefficients[["mass.centered"]] * simdata.table$cancer.prop +
-           interaction.model$coefficients[["genA1:genB1"]] * simdata.table$cancer.prop)             # interaction predictions
+           interaction.model$coefficients[["genA1"]] * simdata.table$cancer.prob +
+           interaction.model$coefficients[["genB1"]] * simdata.table$cancer.prob +
+           interaction.model$coefficients[["mass.centered"]] * simdata.table$cancer.prob +
+           interaction.model$coefficients[["genA1:genB1"]] * simdata.table$cancer.prob)             
+
 # Calculate model averaged predictions
 # weights are from AICtab. This corresponds directly to AICtab.
-pAVG <- p_add * AICtab$weight[1] + p_inter * AICtab$weight[2] + p_null * AICtab$weight[3]
+pAVG <- p_inter * AICtab$weight[1] + p_add * AICtab$weight[2]
+
 # add to simdata table
-simdata.table$p_null <- p_null
-simdata.table$p_add <- p_add
 simdata.table$p_inter <- p_inter
+simdata.table$p_add <- p_add
 simdata.table$pAVG <- pAVG
-# Plot observations and the three sets of predictions
-#lines(p_null ~ mass, data=sim, lwd=2, col="cyan")
-#lines(p_mass ~ mass, data=sim, lwd=2, col="blue")
+
+
+###FIXME: @J these plots all need legends to tell the reader what the different colored lines are
 sim <- filter(simdata.table, genotype=='WT')
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='WT'),ylim=c(0,1))
-lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
-lines(p_add ~ mass, data=sim, lwd=2, col="black")
-lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
+{
+  plot(cancer.prob ~ mass, data=filter(cancer.table, genotype=='WT'),
+       ylim=c(0,1), 
+       xlab="Mass",
+       ylab="Probability of FMC within Lifetime", 
+       main="Models Fit for Wildtype")
+  lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
+  lines(p_add ~ mass, data=sim, lwd=2, col="black")
+  lines(pAVG ~ mass, data=sim, lwd=2, col='red')
+}
+
 sim <- filter(simdata.table, genotype=='A')
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='A'),ylim=c(0,1))
-lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
-lines(p_add ~ mass, data=sim, lwd=2, col="black")
-lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
+{
+  plot(cancer.prob ~ mass, data=filter(cancer.table, genotype=='A'),
+       ylim=c(0,1), 
+       xlab="Mass",
+       ylab="Probability of FMC within Lifetime", 
+       main="Models Fit for Genotype A")
+  lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
+  lines(p_add ~ mass, data=sim, lwd=2, col="black")
+  lines(pAVG ~ mass, data=sim, lwd=2, col='red')
+}
+
 sim <- filter(simdata.table, genotype=='B')
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='B'),ylim=c(0,1))
-lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
-lines(p_add ~ mass, data=sim, lwd=2, col="black")
-lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
+{
+  plot(cancer.prob ~ mass, data=filter(cancer.table, genotype=='B'),
+       ylim=c(0,1), 
+       xlab="Mass",
+       ylab="Probability of FMC within Lifetime", 
+       main="Models Fit for Genotype B")
+  lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
+  lines(p_add ~ mass, data=sim, lwd=2, col="black")
+  lines(pAVG ~ mass, data=sim, lwd=2, col='red')
+}
+
 sim <- filter(simdata.table, genotype=='AB')
-{plot(cancer.prop ~ mass, data=filter(cancer.table, genotype=='AB'),ylim=c(0,1))
-lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
-lines(p_add ~ mass, data=sim, lwd=2, col="black")
-lines(pAVG ~ mass, data=sim, lwd=2, col='red')}
+{
+  plot(cancer.prob ~ mass, data=filter(cancer.table, genotype=='AB'),
+       ylim=c(0,1), 
+       xlab="Mass",
+       ylab="Probability of FMC within Lifetime", 
+       main="Models Fit for Genotype AB")
+  lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
+  lines(p_add ~ mass, data=sim, lwd=2, col="black")
+  lines(pAVG ~ mass, data=sim, lwd=2, col='red')
+}
  
 ```
 
-Model averaging doesn't seem to help, which makes sense since parameters are only useful in context of its own model.
+Model averaging does not seem to help, which makes sense because the parameters are only useful in the context of their own models.
 
 ---
 
 ## Effect Size Analysis
 
-```{r}
+```{r effect size analysis, message=FALSE}
 #### Effect of Genotype on Cancer Risk ####
 avgmass <- mean(cancer.table$mass)     # 10.5 
 # Filter cats that are 10 and 11 lb so that we evaluate on average 10.5 lb cats 
 cancer.table.avgmass <- cancer.table %>% filter(mass == 10 | mass==11)
 
-## no.interaction.model ##
-# For simplicity's sake, we are only comparing gene presence and will ignore mass for now.
-no.interaction.model.avgmass <- glm(cbind(healthy,cancer)  ~ genA + genB, data=cancer.table.avgmass,binomial(link="logit"))
-summary(no.interaction.model.avgmass)
+### no.interaction.model ###
 
-#Coefficients:
-#            Estimate Std. Error z value Pr(>|z|)
-#(Intercept)  -0.2811     0.2248  -1.250    0.211
-#genA1        -0.2499     0.2660  -0.939    0.347
-#genB1        -0.3887     0.2662  -1.460    0.144
+# For simplicity's sake, we are only comparing gene presence and will ignore mass for now.
+no.interaction.model.avgmass <- glm(cbind(healthy,cancer)  ~ genA + genB,
+                                    data=cancer.table.avgmass,binomial(link="logit"))
+summary(no.interaction.model.avgmass)
 
 genA <- plogis(no.interaction.model.avgmass$coefficients[["(Intercept)"]] + 
             no.interaction.model.avgmass$coefficients[["genA1"]] * 1 +
             no.interaction.model.avgmass$coefficients[["genB1"]] * 0)
+
 genB <- plogis(no.interaction.model.avgmass$coefficients[["(Intercept)"]] + 
             no.interaction.model.avgmass$coefficients[["genA1"]] * 0 +
             no.interaction.model.avgmass$coefficients[["genB1"]] * 1)
 
 genA_div_genB <- genA/genB
-genA_div_genB - 1     # 0.09377184
-# Presence of Gene A leads to 9.38% greater change in lifetime cancer risk compared to presence of Gene B under the no.interaction.model for cats that are 10 to 11 lb mass.
+genA_div_genB - 1     #-0.1675539
+```
 
-## interaction.model ##
+In the no interaction model, the presence of gene A leads to 17% less change in lifetime probability of FMC within the lifetime of cats that are 10 to 11 lbs compared to the presence of gene B.
+
+```{r effect size analysis cont., message=FALSE}
+
+### interaction.model ###
+
 # For simplicity's sake, we are only comparing gene presence and will ignore mass for now.
-interaction.model.avgmass<- glm(cbind(healthy,cancer)  ~ genA*genB, data=cancer.table.avgmass,binomial(link="logit"))
+interaction.model.avgmass<- glm(cbind(healthy,cancer)  ~ genA*genB,
+                                data=cancer.table.avgmass,binomial(link="logit"))
 summary(interaction.model.avgmass)
-
-#Coefficients:
-#            Estimate Std. Error z value Pr(>|z|)
-#(Intercept)  -0.1942     0.2552  -0.761    0.447
-#genA1        -0.4284     0.3674  -1.166    0.244
-#genB1        -0.5713     0.3720  -1.536    0.125
-#genA1:genB1   0.3771     0.5330   0.707    0.479
 
 genA <- plogis(interaction.model.avgmass$coefficients[["(Intercept)"]] + 
             interaction.model.avgmass$coefficients[["genA1"]] * 1 +
             interaction.model.avgmass$coefficients[["genB1"]] * 0 +
             interaction.model.avgmass$coefficients[["genA1:genB1"]] * 0)
+
 genB <- plogis(interaction.model.avgmass$coefficients[["(Intercept)"]] + 
             interaction.model.avgmass$coefficients[["genA1"]] * 0 +
             interaction.model.avgmass$coefficients[["genB1"]] * 1 +
             interaction.model.avgmass$coefficients[["genA1:genB1"]] * 0)
+
 genAB <- plogis(interaction.model.avgmass$coefficients[["(Intercept)"]] + 
             interaction.model.avgmass$coefficients[["genA1"]] * 1 +
             interaction.model.avgmass$coefficients[["genB1"]] * 1 +
             interaction.model.avgmass$coefficients[["genA1:genB1"]] * 1)
 
 genA_div_genB <- genA/genB
-genA_div_genB - 1     # 0.1
-# Presence of Gene A leads to 10% greater change in lifetime cancer risk compared to presence of Gene B under the interaction.model for cats that are 10 to 11 lb mass.
+genA_div_genB - 1     #-0.1578947
 
 genAB_div_genA <- genAB/genA
-genAB_div_genA - 1    # -0.122434
-# Presence of both Gene A and B leads to 12.24% decrease change in lifetime cancer risk compared to presence of Gene A under the interaction.model for cats that are 10 to 11 lb mass.
+genAB_div_genA - 1    #-0.3331653
 
 genAB_div_genB <- genAB/genB
-genAB_div_genB - 1    # -0.03467742
-# Presence of both Gene A and B leads to 3.47% decrease change in lifetime cancer risk compared to presence of Gene B under the interaction.model for cats that are 10 to 11 lb mass.
+genAB_div_genB - 1    #-0.438455
 
 ```
 
+The presence of gene A leads to 16% less change in lifetime cancer risk compared to presence of gene B under the interaction model for cats that are 10 to 11 lbs.
+
+The presence of both genes A and B leads to 33% less change in lifetime cancer risk compared to presence of gene A under the interaction model for cats that are 10 to 11 lbs.
+
+The presence of both gene A and B leads to 44% less change in lifetime cancer risk compared to presence of gene B under the interaction model for cats that are 10 to 11 lbs.
+
 ---
+
 ## Interpretation of Model Results
+
+Based on these results, we conclude that the no interaction model is the best model for our data. While the interaction model has the lowest AIC score, the additional degree of freedom in the interaction model results in only 0.59 decrease in AIC from the no interaction model. In the interaction model, the interaction effect of A:B is not statistically significant, unlike genes A and B and the cat's mass. Furthermore, the effect size of the presense of both genes A and B is over 30% lower than that of genes A or B individually. Thus, the additional complexity of the interaction model is unnecessary and likely results in overfitting. 
+
+Based on our analysis, we are able to strongly reject the null hypothesis (that the lifetime chance of developing a FMC is equal across all four genotypes, such that only the cat's mass affects their chance of developing a FMC). We tentively accept alternative hypothesis 1 (that the lifetime chance of developing a FMC is different between genotypes, but there is no interaction effect between genes A and B). Because of how close the interaction and no interaction models are, however, further studies are needed to verify that there is no interaction between genes A and B in the lifetime chance of developing a FMC in female american shorthair cats. 
+
