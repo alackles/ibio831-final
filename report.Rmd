@@ -382,6 +382,7 @@ sim <- filter(simdata.table, genotype=='WT')
   lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
   lines(p_add ~ mass, data=sim, lwd=2, col="black")
   lines(pAVG ~ mass, data=sim, lwd=2, col='red')
+  legend("topleft", legend=c('p_inter', 'p_add','pAVG'), col=c('cyan', 'black', 'red'), lty=1:2, cex=0.8)
 }
 
 sim <- filter(simdata.table, genotype=='A')
@@ -394,6 +395,7 @@ sim <- filter(simdata.table, genotype=='A')
   lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
   lines(p_add ~ mass, data=sim, lwd=2, col="black")
   lines(pAVG ~ mass, data=sim, lwd=2, col='red')
+  legend("topleft", legend=c('p_inter', 'p_add','pAVG'), col=c('cyan', 'black', 'red'), lty=1:2, cex=0.8)
 }
 
 sim <- filter(simdata.table, genotype=='B')
@@ -406,6 +408,7 @@ sim <- filter(simdata.table, genotype=='B')
   lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
   lines(p_add ~ mass, data=sim, lwd=2, col="black")
   lines(pAVG ~ mass, data=sim, lwd=2, col='red')
+  legend("topleft", legend=c('p_inter', 'p_add','pAVG'), col=c('cyan', 'black', 'red'), lty=1:2, cex=0.8)
 }
 
 sim <- filter(simdata.table, genotype=='AB')
@@ -418,6 +421,7 @@ sim <- filter(simdata.table, genotype=='AB')
   lines(p_inter ~ mass, data=sim, lwd=2, col="cyan")
   lines(p_add ~ mass, data=sim, lwd=2, col="black")
   lines(pAVG ~ mass, data=sim, lwd=2, col='red')
+  legend("topleft", legend=c('p_inter', 'p_add','pAVG'), col=c('cyan', 'black', 'red'), lty=1:2, cex=0.8)
 }
  
 ```
@@ -490,11 +494,11 @@ genAB_div_genB - 1    #-0.438455
 
 ```
 
-The presence of gene A leads to 16% less change in lifetime cancer risk compared to presence of gene B under the interaction model for cats that are 10 to 11 lbs.
+The presence of gene A leads to 16% decrease change in lifetime cancer risk compared to presence of gene B under the interaction model for cats that are 10 to 11 lbs.
 
-The presence of both genes A and B leads to 33% less change in lifetime cancer risk compared to presence of gene A under the interaction model for cats that are 10 to 11 lbs.
+The presence of both genes A and B leads to 33% decrease change in lifetime cancer risk compared to presence of gene A under the interaction model for cats that are 10 to 11 lbs.
 
-The presence of both gene A and B leads to 44% less change in lifetime cancer risk compared to presence of gene B under the interaction model for cats that are 10 to 11 lbs.
+The presence of both gene A and B leads to 44% decrease change in lifetime cancer risk compared to presence of gene B under the interaction model for cats that are 10 to 11 lbs.
 
 ---
 
