@@ -508,3 +508,5 @@ Based on these results, we conclude that the no interaction model is the best mo
 
 Based on our analysis, we are able to strongly reject the null hypothesis (that the lifetime chance of developing a FMC is equal across all four genotypes, such that only the cat's mass affects their chance of developing a FMC). We tentively accept alternative hypothesis 1 (that the lifetime chance of developing a FMC is different between genotypes, but there is no interaction effect between genes A and B). Because of how close the interaction and no interaction models are, however, further studies are needed to verify that there is no interaction between genes A and B in the lifetime chance of developing a FMC in female american shorthair cats. 
 
+Biologically, this means that gene A and gene B are not interacting epistatically. While a cat with both gene A and gene B is more likely to develop cancer than one with just gene A or just gene B, this likelihood is _not_ above and beyond that expected from an additive effect of the two genes. This gives us insight into the genetic landscape of these cats and their risk of cancer from these two oncogenes. 
+
