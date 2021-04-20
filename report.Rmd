@@ -96,8 +96,7 @@ We begin by installing and loading the necessary R packages for simulating, anal
 
 ### Install packages if necessary ###
 
-#install.packages("dplyr")
-#install.packages("ggplot2")
+#install.packages("tidyverse")
 #install.packages("GGally")
 #install.packages("lme4")
 #install.packages("boot")
@@ -108,11 +107,11 @@ We begin by installing and loading the necessary R packages for simulating, anal
 
 library(dplyr) # for data wrangling
 library(tidyr) # for data wrangling
+library(ggplot2) # for plotting
 library(GGally) # for ggpairs function, pairwise plotting of multiple variables
 library(lme4) # for GLMMs
 library(boot) # for inv.logit function
 library(bbmle) # for AICctab function to compare models
-library(ggplot2) # for plotting
 
 # Globally update the ggplot theme to center titles on all plots
 theme_update(plot.title = element_text(hjust = 0.5))
@@ -311,7 +310,7 @@ ggplot(data=AICtab, aes(x=df, y=logLik, color=model)) +
 
 ```
 
-When we compare each model's loglikelihood relative to the null model to its degrees of freedom, we see that the no interaction model and interaction model have very similar loglikelihoods, but the interaction model has one higher degrees of freedom. This means that the interaction model is more complex than the no interaction model without significantly improving the loglikelihood relative to the null model. 
+When we compare each model's loglikelihood relative to the null model to its degrees of freedom, we see that the no interaction model and interaction model have very similar loglikelihoods, but the interaction model has one higher degrees of freedom. This means that the interaction model is more complex than the no interaction model without significantly improving the loglikelihood relative to the null model. Therefore, it may be prudent to select the no-interaction model for the sake of simplicity.
 
 
 ```{r dAIC plot, message=FALSE}
@@ -506,7 +505,7 @@ The presence of both gene A and B leads to 44% decrease change in lifetime cance
 
 Based on these results, we conclude that the no interaction model is the best model for our data. While the interaction model has the lowest AIC score, the additional degree of freedom in the interaction model results in only 0.59 decrease in AIC from the no interaction model. In the interaction model, the interaction effect of A:B is not statistically significant, unlike genes A and B and the cat's mass. Furthermore, the effect size of the presense of both genes A and B is over 30% lower than that of genes A or B individually. Thus, the additional complexity of the interaction model is unnecessary and likely results in overfitting. 
 
-Based on our analysis, we are able to strongly reject the null hypothesis (that the lifetime chance of developing a FMC is equal across all four genotypes, such that only the cat's mass affects their chance of developing a FMC). We tentively accept alternative hypothesis 1 (that the lifetime chance of developing a FMC is different between genotypes, but there is no interaction effect between genes A and B). Because of how close the interaction and no interaction models are, however, further studies are needed to verify that there is no interaction between genes A and B in the lifetime chance of developing a FMC in female american shorthair cats. 
+Based on our analysis, we are able to strongly reject the null hypothesis (that the lifetime chance of developing a FMC is equal across all four genotypes, such that only the cat's mass affects their chance of developing a FMC). We tentatively accept alternative hypothesis 1 (that the lifetime chance of developing a FMC is different between genotypes, but there is no interaction effect between genes A and B). Because of how close the interaction and no interaction models are, however, further studies are needed to verify that there is no interaction between genes A and B in the lifetime chance of developing a FMC in female American Shorthair cats. 
 
 Biologically, this means that gene A and gene B are not interacting epistatically. While a cat with both gene A and gene B is more likely to develop cancer than one with just gene A or just gene B, this likelihood is _not_ above and beyond that expected from an additive effect of the two genes. This gives us insight into the genetic landscape of these cats and their risk of cancer from these two oncogenes. 
 
